@@ -78,33 +78,6 @@ plt.show()
 
 
 
-#plotting maps
-#pdf = PdfPages ('/users/mtj507/scratch/plots/pm25_practice_plot.pdf')
-
-#for i in np.arange(0,24):
-#  print(i)
-#  fig = plt.figure(figsize=(10, 10))
-#  ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
-#  ax.set_extent([-10, 5, 48, 62], ccrs.PlateCarree())
-#  lons=lons[:]
-#  lats=lats[:]
-#  data=(spec[i,0,:,:])*(10**9)
-#  plt.suptitle('1/10/19 Hour %i' %(i+1) )
-
-#  map=ax.contourf(lons, lats, data,
-#                transform=ccrs.PlateCarree(),
-#                cmap='plasma', levels=np.arange(0,40,2))
-  
-#  ax.coastlines(resolution='50m')
-
-
-#  cbar = fig.colorbar(map,ax=ax, orientation='horizontal', fraction=.1)	
-#  cbar.ax.set_xlabel('pm25 / ppb')
-#  pdf.savefig()
-#  plt.close()
-
-#pdf.close()
-
 
 
 
