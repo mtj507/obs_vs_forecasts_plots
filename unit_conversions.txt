@@ -1,0 +1,25 @@
+At 1 atmosphere and 25C:
+
+PM 2.5 - 1:1 - both in ug/m^3
+
+NO2 - OpennAQ data in ug/m^3
+    - Nasa forecast in ppv
+    - 1 ppb = 1.88 ug/m^3
+    - ppv *1.88*10**9 --> ug/m^3
+
+O3  - OpenAQ data in ug/m^3 
+    - Nasa forecast in ppv
+    - 1 ppb = 2.00 ug/m^3
+    - ppv *2*10**9 --> ug/m^3
+
+CO  - OpenAQ data in ug/m^3
+    - Nasa forecast in ppv
+    - 1 ppb = 1.145 ug/m^3
+    - ppv *1.145*10**9 --> ug/m^3
+ 
+SO2 - OpenAQ data in ug/m^3
+    - Nasa forecast in ppv
+    - 1 ppb = 2.62 ug/m^3
+    - ppv *2.62*10** --> ug/m^3
+ 
+
