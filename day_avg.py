@@ -42,39 +42,91 @@ longitude=df['longitude']
 color=df['color']
 no_locations=len(df.index)  #counting number of indexes for use in np.aranges
 
+api=openaq.OpenAQ()
+
+for i in np.arange(0,no_locations):
+    data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
+    data['date.utc'] = data['date.utc']+pd.Timedelta('30 min')
+    time=data['date.utc'].index.hour
+    df1=pd.DataFrame(data)
+    df1['time']=time
+    df2=df1.drop(columns=['date.utc'])
+    df2=df2.groupby('time').mean()
+    plt.plot(df2.index, df2['value'], color=f'{color[i]}', label='observation')
+    mod_data = np.zeros((24,8))
+    dfs=[]
+
+    for j in np.arange(922,930):
+        forecast_date=f'2019{str(j).zfill(4)}'
+        f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
+        ds=xr.open_dataset(f)
+        spec=ds[emission].data
+        lats=ds['lat'].data
+        lons=ds['lon'].data
+        model_lat=np.argmin(np.abs(latitude[i]-lats))
+        model_lon=np.argmin(np.abs(longitude[i]-lons))
+        df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
+        df_model.index=ds.time.data
+        df_model.columns=[emission]
+        df_model.index.name='date_time'
+        time=df_model.index.hour
+        df_model['Hour']=time
+        df_model=df_model.reset_index()
+        df_model=df_model.iloc[0:24]
+        df_model=df_model.sort_index() 
+        df_model[emission]=df_model[emission]*conv       
+
+
+        for k in range(24):
+             mod_data[k,j-922] = df_model[emission].loc[df_model['Hour'] == k].values[0]
+             plt.plot(range(24),np.mean(mod_data,1),label='model',color='red')
+             plt.xlabel('hour of day')
+             plt.ylabel('NO2')
+             plt.legend()
+             plt.title(location[i])
+             plt.show()
+            # print(location[i])
+  
+
 
 #plotting openaq data
-api = openaq.OpenAQ()
-for i in np.arange(0, no_locations):
-  data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
-  data['date.utc'] = data['date.utc']+pd.Timedelta('30 min')#accounting for 30 min delay behind model
-  time=data['date.utc'].index.hour
-  df1=pd.DataFrame(data)
-  df1['time']=time
-  df2=df1.drop(columns=['date.utc'])
-  df2=df2.groupby('time').mean()
-  ax.plot(df2.index, df2['value'], color=f'{color[i]}', label=Emission+f' {location[i]}')
-  plt.legend() 
+#api = openaq.OpenAQ()
+#for i in np.arange(0, no_locations):
+#  data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
+#  data['date.utc'] = data['date.utc']+pd.Timedelta('30 min')#accounting for 30 min delay behind model
+#  time=data['date.utc'].index.hour
+#  df1=pd.DataFrame(data)
+#  df1['time']=time
+#  df2=df1.drop(columns=['date.utc'])
+#  df2=df2.groupby('time').mean()
+#  ax.plot(df2.index, df2['value'], color=f'{color[i]}', label=Emission+f' {location[i]}')
+#  plt.legend()
 
-
+ 
 #turning model dataset into dataframe
-for j in np.arange(0, no_locations):
-  for i in np.arange(922, 930):
-    forecast_date=f'2019{str(i).zfill(4)}'
-    f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
-    ds=xr.open_dataset(f)
-    spec=ds[emission].data
-    lats=ds['lat'].data
-    lons=ds['lon'].data
-    model_lat=np.argmin(np.abs(latitude[j]-lats))
-    model_lon=np.argmin(np.abs(longitude[j]-lons))
-    df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
-    df_model.index=ds.time.data
-    df_model.columns=[emission]
-    df_model.index.name='hour'
-    df_model.iloc[0:24]
-    
-plt.show()
+#for j in np.arange(0, no_locations):
+#  df[j]=pd.DataFrame()
+#  for i in np.arange(922, 930):
+#    forecast_date=f'2019{str(i).zfill(4)}'
+#    f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
+#    ds=xr.open_dataset(f)
+#    spec=ds[emission].data
+#    lats=ds['lat'].data
+#    lons=ds['lon'].data
+#   model_lat=np.argmin(np.abs(latitude[j]-lats))
+#    model_lon=np.argmin(np.abs(longitude[j]-lons))
+#    df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
+#    df_model.index=ds.time.data
+#    #dataframe now made
+#    df_model.columns=[emission]
+#    df_model.index.name='date_time'
+#    time=df_model.index.hour
+#    df_model=pd.DataFrame(df_model)
+#    df_model[forecast_date + ' Hour']=time
+#    df_model[
+
+
+#plt.show()
 
 
 
