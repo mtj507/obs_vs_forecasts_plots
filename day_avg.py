@@ -7,51 +7,50 @@ import numpy as np
 import openaq
 from datetime import datetime
 from matplotlib.backends.backend_pdf import PdfPages
+from itertools import chain
+
 
 #defining emission to be observed and conversion (can be found in conversion file)
 emission='no2'
 Emission='NO2'
 conv = 1.88*10**9
 
-#setting up plot
-#fig,ax = plt.subplots()
-#ax.set_xlabel('Hour')
-#ax.set_ylabel(Emission+'/ug m-3')
-#ax.set_ylim([0,100])
-#ax.set_xlim(0, 24)
-#ax.grid(True)
-
 #defining cities from whhich to extract data
 city_1='York'
 city_2='York'
 city_3='York'
 
-#input of locations from which to get data
-openaqdata=[['London', 'London Westminster', 51.494, -0.132, 'blue'], ['London', 'London Bloomsbury', 51.522, -0.126, 'green'], ['London', 'London Marylebone Road', 51.522, -0.155, 'red'], ['London', 'London N. Kensington', 51.521, -0.214, 'pink'], ['London', 'London Eltham', 51.452, 0.07, 'gold'], ['London', 'London Bexley', 51.466, 0.184, 'teal'], ['London', 'London Teddington Bushy Park', 51.425, -0.346, 'navy'], ['London', 'London Harlington', 51.488, -0.442, 'slategrey'], ['London', 'Camden Kerbside', 51.544, -0.176, 'crimson'], ['York', 'York Bootham', 53.967, -1.087, 'orchid'], ['York', 'York Fishergate', 53.951, -1.076, 'lawngreen'], ['Newcastle', 'Newcastle Centre', 54.978, -1.611, 'black'], ['Edinburgh', 'Edinburgh St Leonards', 55.945, -3.183, 'orange']]
-df=pd.DataFrame(openaqdata, columns=['city', 'location', 'latitude', 'longitude', 'color'])
+api=openaq.OpenAQ()
+opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
+df=pd.DataFrame(opendata)
 df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
-df=df.reset_index(drop=True)
+df=df.drop_duplicates(subset='location', keep='first')
+df=df.reset_index(drop=False)
 city=df['city']
 location=df['location']
-latitude=df['latitude']
-longitude=df['longitude']
-color=df['color']
+latitude=df['coordinates.latitude']
+longitude=df['coordinates.longitude']
 no_locations=len(df.index)  #counting number of indexes for use in np.aranges
 
-api=openaq.OpenAQ()
 
+api=openaq.OpenAQ()
+#openaq data in local time.
 for i in np.arange(0,no_locations):
     data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
-    data['date.utc'] = data['date.utc']+pd.Timedelta('30 min')
+    data['date.utc'] = data['date.utc']
     time=data['date.utc'].index.hour
     df1=pd.DataFrame(data)
     df1['time']=time
     df2=df1.drop(columns=['date.utc'])
     df2=df2.groupby('time').mean()
-    plt.plot(df2.index, df2['value'], color=f'{color[i]}', label='observation')
-    mod_data = np.zeros((24,8))
-
-    for j in np.arange(922,930):
+    plt.plot(df2.index, df2['value'], label='Observation')
+     
+ 
+    mod_data = np.zeros((24,23))
+    
+    dates=chain(range(922,930), range(1001,1016))
+ 
+    for j in dates:
         forecast_date=f'2019{str(j).zfill(4)}'
         f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
         ds=xr.open_dataset(f)
@@ -70,16 +69,23 @@ for i in np.arange(0,no_locations):
         df_model=df_model.iloc[0:24]
         df_model=df_model.sort_index() 
         df_model[emission]=df_model[emission]*conv       
+         
+        for dates in range(922,930):
+            for k in range(24):
+             mod_data[k,dates-922] = df_model[emission].loc[df_model['Hour'] == k].values[0]
+        
+        for dates in range(1001,1016):
+            for k in range(24):
+             mod_data[k,dates-1001] = df_model[emission].loc[df_model['Hour'] == k].values[0]
 
-        for k in range(24):
-             mod_data[k,j-922] = df_model[emission].loc[df_model['Hour'] == k].values[0]
 
-    plt.plot(range(24),np.mean(mod_data,1),label='model',color='red')
-    plt.xlabel('hour of day')
-    plt.ylabel('NO2')
+
+    plt.plot(range(24),np.mean(mod_data,1),label='Model',color='red')
+    plt.xlabel('Hour of Day')
+    plt.ylabel(Emission + ' ug/m3')
     plt.legend()
     plt.title(location[i])
-    plt.savefig(f'/users/mtj507/scratch//obs_vs_forecast/plots/{location[i]}_comparison.png')
+    plt.savefig('/users/mtj507/scratch//obs_vs_forecast/plots/'+emission+f'_{location[i]}_comparison.png')
     plt.close()
     print(location[i])
   
