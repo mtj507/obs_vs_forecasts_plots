@@ -16,14 +16,14 @@ conv = 1
 
 #defining cities from whhich to extract data
 city_1='York'
-city_2='York'
-city_3='York'
+city_2='Leeds'
+city_3='Liverpool'
 
 api=openaq.OpenAQ()
 opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
 df=pd.DataFrame(opendata)
-#df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
-df=df.loc[df['location']=='York Fishergate']
+df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
+#df=df.loc[df['location']=='York Fishergate']
 df=df.drop_duplicates(subset='location', keep='first')
 df=df.reset_index(drop=False)
 city=df['city']
@@ -41,8 +41,15 @@ ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
 ddf=ddf.dropna(axis=0)
 ddf=ddf.replace('No data', np.nan)
 ddf['hour']=ddf.index.hour
+ddf['weekday']=ddf.index.weekday
+ddf['month']=ddf.index.month.astype(str)
+ddf['month']=ddf['month'].str.zfill(2)
+ddf['day']=ddf.index.day.astype(str)
+ddf['day']=ddf['day'].str.zfill(2)
+ddf['day and month']=ddf['month']+ddf['day']
 
-ddf.loc['2019-09-22':'2019-11-03']
+
+ddf=ddf.loc['2019-09-22':'2019-11-05']
 
 for i in np.arange(0, no_locations):
     ddf1=ddf.loc[:,['hour', f'{location[i]}']]
@@ -54,21 +61,10 @@ for i in np.arange(0, no_locations):
     plt.fill_between(ddf_mean.index, (ddf_mean['value']+ddf_std['value']), (ddf_mean['value']-ddf_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
 
 
-#for i in np.arange(0,no_locations):
-#    data=api.measurements(df=True, parameter=emission, location=f'{location[i]}', limit=10000)
-#    time=data['date.utc'].index.hour
-#    df1=pd.DataFrame(data)
-#    df1['time']=time
-#    df2=df1.drop(columns=['date.utc'])
-#    df_mean=df2.groupby('time').mean()
-#    df_std=df2.groupby('time').std()
-#    plt.plot(df_mean.index, df_mean['value'], label='OpenAQ Observation', color='red')
-#    plt.fill_between(df_mean.index, (df_mean['value']+df_std['value']), (df_mean['value']-df_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')   
+    days_of_data=len(pd.unique(ddf['day and month']))
+    dates=pd.unique(ddf['day and month'])
+    mod_data = np.zeros((24,days_of_data))
     
-    mod_data = np.zeros((24,43))  #ensure 2nd number here is equal to number of days being used below
-    
-    dates=np.append(np.arange(922,931), np.arange(1001,1032))
-    dates=np.append(dates, np.arange(1101,1104)) 
     
     for j in range(len(dates)):
         forecast_date=f'2019{str(dates[j]).zfill(4)}'
@@ -103,8 +99,8 @@ for i in np.arange(0, no_locations):
     plt.ylabel(Emission + ' ug/m3')
     plt.legend()
     plt.title(location[i])
-    path='/users/mtj507/scratch//obs_vs_forecast/plots/'+emission
-    plt.savefig(path+'/'+emission+f'_{location[i]}_comparison.png')   
+    path='/users/mtj507/scratch//obs_vs_forecast/plots/'+emission+'/full_week_diurnal/'
+    plt.savefig(path+emission+f'_{location[i]}_diurnal.png')   
     plt.close()
     print(location[i])
   
