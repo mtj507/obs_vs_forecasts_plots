@@ -16,7 +16,7 @@ conv = 1.88*10**9
 #defining cities from whhich to extract data
 city_1='London'
 city_2='York'
-city_3='Leeds'
+city_3='Sheffield'
 
 #obtaining meta data from openaq like lat + lon
 api=openaq.OpenAQ()
@@ -51,6 +51,7 @@ ddf['day and month']=ddf['month']+ddf['day']
 #selecting dates for DEFRA data to be taken from.
 ddf=ddf.loc['2019-09-22':'2019-11-04']
 
+
 #creating weekday diurnal
 for i in np.arange(0, no_locations):
     ddf1=ddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
@@ -63,8 +64,8 @@ for i in np.arange(0, no_locations):
     plt.fill_between(ddf_mean.index, (ddf_mean['value']+ddf_std['value']), (ddf_mean['value']-ddf_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
 
 
-    days_of_data=len(pd.unique(ddf['day and month']))
-    dates=pd.unique(ddf['day and month']) 
+    days_of_data=len(pd.unique(ddf1['day and month']))
+    dates=pd.unique(ddf1['day and month']) 
     mod_data = np.zeros((24,days_of_data)) 
 
     for j in range(len(dates)):
@@ -117,8 +118,8 @@ for x in np.arange(0, no_locations):
     plt.fill_between(ddf_mean.index, (ddf_mean['value']+ddf_std['value']), (ddf_mean['value']-ddf_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
 
 
-    days_of_data=len(pd.unique(ddf['day and month']))
-    dates=pd.unique(ddf['day and month']) 
+    days_of_data=len(pd.unique(ddf1['day and month']))
+    dates=pd.unique(ddf1['day and month']) 
     mod_data = np.zeros((24,days_of_data)) 
 
     for y in range(len(dates)):
@@ -128,8 +129,8 @@ for x in np.arange(0, no_locations):
         spec=ds[emission].data
         lats=ds['lat'].data
         lons=ds['lon'].data
-        model_lat=np.argmin(np.abs(latitude[i]-lats))
-        model_lon=np.argmin(np.abs(longitude[i]-lons))
+        model_lat=np.argmin(np.abs(latitude[x]-lats))
+        model_lon=np.argmin(np.abs(longitude[x]-lons))
         df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
         df_model.index=ds.time.data
         df_model.columns=[emission]
