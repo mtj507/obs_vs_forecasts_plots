@@ -14,7 +14,7 @@ Emission='NO2'
 conv = 1.88*10**9
 
 #defining cities from whhich to extract data
-city_1='London'
+city_1='Newcastle'
 city_2='York'
 city_3='Leeds'
 
@@ -25,8 +25,8 @@ date2='2019-11-04'
 api=openaq.OpenAQ()
 opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
 df=pd.DataFrame(opendata)
-df=df.loc[df['location']=='Leeds Centre']
-#df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
+#df=df.loc[df['location']=='Leeds Centre']
+df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
 df=df.drop_duplicates(subset='location', keep='first')
 df=df.reset_index(drop=False)
 city=df['city']
@@ -125,15 +125,15 @@ for i in np.arange(0, no_locations):
     plt.xlabel('Hour of Day')
     plt.ylabel('NOX ug/m3')
     plt.legend()
-    plt.title(location[i])
+    plt.title(location[i]+' Weekday Diurnal')
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/weekend_weekday_diurnal/'
     plt.savefig(path+'nox'+f'_{location[i]}_weekday_diurnal.png')
     plt.close()
-    print(location[i])
+    print(location[i]+' weekday')
   
 
 
-#weekend diurnal
+#weekend diurnal - remember to change akk variables to correect letter
 for x in np.arange(0, no_locations):
     ddf1=ddf.loc[:,['hour', f'{location[x]}', 'weekday', 'day and month']]
     noddf1=noddf.loc[:,[f'{location[x]}']]
@@ -191,11 +191,11 @@ for x in np.arange(0, no_locations):
     plt.xlabel('Hour of Day')
     plt.ylabel('NOX ug/m3')
     plt.legend()
-    plt.title(location[i])
+    plt.title(location[x]+' Weekend Diurnal')
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/weekend_weekday_diurnal/'
-    plt.savefig(path+'nox'+f'_{location[i]}_weekend_diurnal.png')
+    plt.savefig(path+'nox'+f'_{location[x]}_weekend_diurnal.png')
     plt.close()
-    print(location[i])
+    print(location[x]+' weekend')
 
 
 
