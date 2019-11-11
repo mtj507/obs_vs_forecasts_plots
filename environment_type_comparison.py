@@ -36,6 +36,7 @@ for environment in environments:
     
     for i in emissions:
         defra_csv='/users/mtj507/scratch/defra_data/defra_'+i+'_eng_2019.csv'
+        print(i)
         ddf=pd.read_csv(defra_csv, low_memory=False)
         ddf.index=pd.to_datetime(ddf['Date'], dayfirst=True)+pd.to_timedelta(ddf['Time'])
         ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
@@ -44,15 +45,23 @@ for environment in environments:
         ddf['hour']=ddf.index.hour
         ddf=ddf.loc['2019-09-22':'2019-11-05']
         ddf=ddf.loc[:,headers] 
-        ddf=ddf[headers].astype(float)
+        ddf=ddf.astype(float)
+        ddf=ddf.dropna(axis=1,how='all')
+        if (environment == 'Industrial Suburban' and i == 'pm25'):
+          continue 
         ddf_mean=ddf.groupby('hour').mean()
-        ddf_mean=ddf_mean.dropna(axis=1, how='all')       
+        ddf_mean['mean']=ddf_mean.mean(axis=1)       
         ddf_std=ddf.groupby('hour').std()
-        ddf_std=ddf_std.dropna(axis=1, how='all')
+        ddf_std['std']=ddf_std.mean(axis=1)
+        plt.plot(ddf_mean.index, ddf_mean['mean'], label='Observation', color='blue')
+        plt.fill_between(ddf_mean.index, (ddf_mean['mean']+ddf_std['std']), (ddf_mean['mean']-ddf_std['std']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
 
-        plt.plot(ddf_mean.index, ddf_mean['value'], label='Observation', color='blue')
-        plt.fill_between(ddf_mean.index, (ddf_mean['value']+ddf_std['value']), (ddf_mean['value']-ddf_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
-        print(i)
+
+
+
+
+
+
 
 
 
