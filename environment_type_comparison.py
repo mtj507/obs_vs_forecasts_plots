@@ -12,10 +12,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 metadata_csv='/users/mtj507/scratch/defra_data/defra_eng_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
 metadata=metadata.reset_index(drop=False)
-area=metadata['Zone']
-location=metadata['Site Name']
-latitude=metadata['Latitude']
-longitude=metadata['Longitude']
 environment=metadata['Environment Type']
 environments=pd.unique(environment)
 
@@ -30,10 +26,14 @@ for environment in environments:
     metadata=metadata.loc[metadata['Environment Type']==environment]
     check=pd.unique(metadata['Environment Type'])
     locations=metadata['Site Name']
+    latitude=metadata['Latitude']
+    longitude=metadata['Longitude']
     headers=locations.values.tolist()    
     headers.append('hour')  
     print(check)
+    no_locations=len(metadata.index)
     
+ 
     for i in emissions:
         defra_csv='/users/mtj507/scratch/defra_data/defra_'+i+'_eng_2019.csv'
         print(i)
@@ -42,20 +42,58 @@ for environment in environments:
         ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
         ddf=ddf.dropna(axis=0)
         ddf=ddf.replace('No data', np.nan)
+        ddf['weekday']=ddf.index.weekday
+        ddf['month']=ddf.index.month.astype(str)
+        ddf['month']=ddf['month'].str.zfill(2)
+        ddf['day']=ddf.index.day.astype(str)
+        ddf['day']=ddf['day'].str.zfill(2)
+        ddf['day and month']=ddf['month']+ddf['day']
+
         ddf['hour']=ddf.index.hour
         ddf=ddf.loc['2019-09-22':'2019-11-05']
-        ddf=ddf.loc[:,headers] 
-        ddf=ddf.astype(float)
-        ddf=ddf.dropna(axis=1,how='all')
+        ddf1=ddf.loc[:,headers] 
+        ddf1=ddf1.astype(float)
+        ddf1=ddf1.dropna(axis=1,how='all')
         if (environment == 'Industrial Suburban' and i == 'pm25'):
           continue 
-        ddf_mean=ddf.groupby('hour').mean()
+        ddf_mean=ddf1.groupby('hour').mean()
         ddf_mean['mean']=ddf_mean.mean(axis=1)       
-        ddf_std=ddf.groupby('hour').std()
+        ddf_std=ddf1.groupby('hour').std()
         ddf_std['std']=ddf_std.mean(axis=1)
         plt.plot(ddf_mean.index, ddf_mean['mean'], label='Observation', color='blue')
         plt.fill_between(ddf_mean.index, (ddf_mean['mean']+ddf_std['std']), (ddf_mean['mean']-ddf_std['std']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
 
+        days_of_data=len(pd.unique(ddf['day and month']))
+        dates=pd.unique(ddf['day and month'])
+        mod_data = np.zeros((24,days_of_data))
+    #up to here trying to get NASA data    
+        for x in np.arange(0, no_locations):
+            metadata=metadata.loc[:,[f'{location[x]}']]
+        
+            for j in range(len(dates)):
+                forecast_date=f'2019{str(dates[j]).zfill(4)}'
+                f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
+                ds=xr.open_dataset(f)
+                spec=ds[i].data
+                lats=ds['lat'].data
+                lons=ds['lon'].data
+                model_lat=np.argmin(np.abs(latitude[x]-lats))
+                model_lon=np.argmin(np.abs(longitude[x]-lons))
+                df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
+                df_model.index=ds.time.data
+                df_model.columns=[i]
+                df_model.index.name='date_time'
+                time=df_model.index.hour
+                df_model['Hour']=time
+                df_model=df_model.reset_index()
+                df_model=df_model.iloc[0:24]
+                df_model=df_model.sort_index()
+                
+                df_model[i]=df_model[i]*conv
+
+                for k in range(24):
+                    mod_data[k,j] = df_model[emission].loc[df_model['Hour'] == k].values[0]
+    
 
 
 
@@ -63,5 +101,4 @@ for environment in environments:
 
 
 
-
-
+    
