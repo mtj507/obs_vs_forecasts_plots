@@ -13,24 +13,24 @@ emission='no2'
 Emission='NO2'
 conv = 1.88*10**9
 
-#defining cities from whhich to extract data
-city_1='Newcastle'
-city_2='York'
-city_3='Leeds'
+#types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-#obtaining meta data from openaq like lat + lon
-api=openaq.OpenAQ()
-opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
-df=pd.DataFrame(opendata)
-#df=df.loc[df['location']=='Newcastle Cradlewell Roadside']
-df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
-df=df.drop_duplicates(subset='location', keep='first')
-df=df.reset_index(drop=False)
-city=df['city']
-location=df['location']
-latitude=df['coordinates.latitude']
-longitude=df['coordinates.longitude']
-no_locations=len(df.index)  #counting number of indexes for use in np.aranges
+environment_type='Background Urban'
+data_area='Greater London'
+city='London'
+
+metadata_csv='/users/mtj507/scratch/defra_data/defra_eng_site_metadata.csv'
+metadata=pd.read_csv(metadata_csv, low_memory=False)
+metadata=metadata.loc[metadata['Environment Type']==environment_type]
+#metadata=metadata[metadata['Site Name'].str.match(city)]
+#metadata=metadata.loc[metadata['Site Name']=='London N. Kensington']
+metadata=metadata.reset_index(drop=False)
+area=metadata['Zone']
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+environment=metadata['Environment Type']
+no_locations=len(metadata.index)
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
 #using defra rather than openaq for actual data
@@ -61,7 +61,7 @@ for i in np.arange(0, no_locations):
 
     days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
-    mod_data = np.zeros((24,days_of_data))  #ensure 2nd number here is equal to number of days being used
+    mod_data = np.zeros((24,days_of_data))  
     
     for j in range(len(dates)):
         forecast_date=f'2019{str(dates[j]).zfill(4)}'
@@ -100,9 +100,6 @@ for i in np.arange(0, no_locations):
     plt.close()
     print(location[i])
   
-
-
-
 
 
 
