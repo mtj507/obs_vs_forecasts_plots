@@ -11,7 +11,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_eng_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
-metadata=metadata.reset_index(drop=False)
 environment=metadata['Environment Type']
 environments=pd.unique(environment)
 
@@ -22,9 +21,9 @@ emissions=['no2', 'no', 'pm25', 'o3']
 for environment in environments:
     metadata_csv='/users/mtj507/scratch/defra_data/defra_eng_site_metadata.csv'
     metadata=pd.read_csv(metadata_csv, low_memory=False)
-    metadata=metadata.reset_index(drop=False)
     metadata=metadata.loc[metadata['Environment Type']==environment]
     check=pd.unique(metadata['Environment Type'])
+    metadata=metadata.reset_index(drop=True)
     locations=metadata['Site Name']
     latitude=metadata['Latitude']
     longitude=metadata['Longitude']
@@ -65,21 +64,33 @@ for environment in environments:
 
         days_of_data=len(pd.unique(ddf['day and month']))
         dates=pd.unique(ddf['day and month'])
-        mod_data = np.zeros((24,days_of_data))
-    #up to here trying to get NASA data    
-        for x in np.arange(0, no_locations):
-            metadata=metadata.loc[:,[f'{location[x]}']]
+        mod_data = np.zeros((24,days_of_data,no_locations))
         
+        if i == 'no2': 
+          conv=1.88*10**9
+        if i == 'no':
+          conv=1.23*10**9   
+        if i == 'pm25':
+          conv=1
+        if i == 'o3':
+          conv=2*10**9
+
+        for x in np.arange(0, no_locations):
+            print(f'{locations[x]}')
+            
+
             for j in range(len(dates)):
                 forecast_date=f'2019{str(dates[j]).zfill(4)}'
                 f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
                 ds=xr.open_dataset(f)
+                if i == 'pm25':
+                  i='pm25_rh35_gcc'
                 spec=ds[i].data
                 lats=ds['lat'].data
                 lons=ds['lon'].data
                 model_lat=np.argmin(np.abs(latitude[x]-lats))
                 model_lon=np.argmin(np.abs(longitude[x]-lons))
-                df_model=pd.DataFrame(ds[emission].data[:,0,model_lat, model_lon])
+                df_model=pd.DataFrame(ds[i].data[:,0,model_lat, model_lon])
                 df_model.index=ds.time.data
                 df_model.columns=[i]
                 df_model.index.name='date_time'
@@ -92,9 +103,23 @@ for environment in environments:
                 df_model[i]=df_model[i]*conv
 
                 for k in range(24):
-                    mod_data[k,j] = df_model[emission].loc[df_model['Hour'] == k].values[0]
-    
-
+                    mod_data[k,j,x] = df_model[i].loc[df_model['Hour'] == k].values[0]
+        
+        if i == 'pm25_rh35_gcc':
+          i = 'pm25' 
+        plt.plot(range(24),np.median(mod_data,axis=(1,2)),label='Model',color='maroon')
+#edit to work
+        Q1=np.percentile(mod_data, 25, axis=(1,2))
+        Q3=np.percentile(mod_data, 75, axis=(1,2))
+        plt.fill_between(range(24), Q1, Q3, alpha=0.5, facecolor='red', edgecolor='red')
+        plt.xlabel('Hour of Day')
+        plt.ylabel(i + ' ug/m3')
+        plt.legend()
+        plt.title(environment +' '+ i)
+        path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/'
+        plt.savefig(path+environment+'_'+i)
+        print('saved')
+        plt.close() 
 
 
 
