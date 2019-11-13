@@ -15,11 +15,11 @@ conv = 1.88*10**9
 
 #types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-environment_type='Background Urban'
+environment_type='Industrial Urban'
 data_area='Greater London'
 city='London'
 
-metadata_csv='/users/mtj507/scratch/defra_data/defra_eng_site_metadata.csv'
+metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
 metadata=metadata.loc[metadata['Environment Type']==environment_type]
 #metadata=metadata[metadata['Site Name'].str.match(city)]
@@ -34,7 +34,7 @@ no_locations=len(metadata.index)
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
 #using defra rather than openaq for actual data
-defra_csv='/users/mtj507/scratch/defra_data/defra_no2_eng_2019.csv'
+defra_csv='/users/mtj507/scratch/defra_data/defra_no2_uk_2019.csv'
 ddf=pd.read_csv(defra_csv, low_memory=False)
 ddf.index=pd.to_datetime(ddf['Date'], dayfirst=True)+pd.to_timedelta(ddf['Time'])
 ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
