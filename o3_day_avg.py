@@ -13,25 +13,27 @@ emission='o3'
 Emission='O3'
 conv = 2*10**9
 
-#defining cities from whhich to extract data
-city_1='York'
-city_2='Leeds'
-city_3='Liverpool'
+#types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-api=openaq.OpenAQ()
-opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
-df=pd.DataFrame(opendata)
-df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
-df=df.drop_duplicates(subset='location', keep='first')
-df=df.reset_index(drop=False)
-city=df['city']
-location=df['location']
-latitude=df['coordinates.latitude']
-longitude=df['coordinates.longitude']
-no_locations=len(df.index)  #counting number of indexes for use in np.aranges
+environment_type='Background Urban'
+data_area='Greater London'
+city='London'
+
+metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
+metadata=pd.read_csv(metadata_csv, low_memory=False)
+metadata=metadata.loc[metadata['Environment Type']==environment_type]
+#metadata=metadata[metadata['Site Name'].str.match(city)]
+#metadata=metadata.loc[metadata['Site Name']=='London N. Kensington']
+metadata=metadata.reset_index(drop=False)
+area=metadata['Zone']
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+environment=metadata['Environment Type']
+no_locations=len(metadata.index)
 
 
-defra_csv='/users/mtj507/scratch/defra_data/defra_o3_eng_2019.csv'
+defra_csv='/users/mtj507/scratch/defra_data/defra_o3_uk_2019.csv'
 ddf=pd.read_csv(defra_csv, low_memory=False)
 ddf.index=pd.to_datetime(ddf['Date'], dayfirst=True)+pd.to_timedelta(ddf['Time'])
 ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
