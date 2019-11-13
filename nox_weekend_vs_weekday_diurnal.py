@@ -13,31 +13,31 @@ emission='no2'
 Emission='NO2'
 conv = 1.88*10**9
 
-#defining cities from whhich to extract data
-city_1='Newcastle'
-city_2='York'
-city_3='Leeds'
-
 date1='2019-09-22'
 date2='2019-11-04'
 
-#obtaining meta data from openaq like lat + lon
-api=openaq.OpenAQ()
-opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
-df=pd.DataFrame(opendata)
-#df=df.loc[df['location']=='Leeds Centre']
-df=df.loc[(df['city']==city_1)|(df['city']==city_2)|(df['city']==city_3)]
-df=df.drop_duplicates(subset='location', keep='first')
-df=df.reset_index(drop=False)
-city=df['city']
-location=df['location']
-latitude=df['coordinates.latitude']
-longitude=df['coordinates.longitude']
-no_locations=len(df.index)  #counting number of indexes for use in np.aranges
+#types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
+
+environment_type='Background Urban'
+data_area='Greater London'
+city='London'
+
+metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
+metadata=pd.read_csv(metadata_csv, low_memory=False)
+metadata=metadata.loc[metadata['Environment Type']==environment_type]
+#metadata=metadata[metadata['Site Name'].str.match(city)]
+#metadata=metadata.loc[metadata['Site Name']=='London N. Kensington']
+metadata=metadata.reset_index(drop=False)
+area=metadata['Zone']
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+environment=metadata['Environment Type']
+no_locations=len(metadata.index)
+
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
-#using defra rather than openaq for actual data
-no2_defra_csv='/users/mtj507/scratch/defra_data/defra_no2_eng_2019.csv'
+no2_defra_csv='/users/mtj507/scratch/defra_data/defra_no2_uk_2019.csv'
 ddf=pd.read_csv(no2_defra_csv, low_memory=False)
 ddf.index=pd.to_datetime(ddf['Date'], dayfirst=True)+pd.to_timedelta(ddf['Time'])
 ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
@@ -53,7 +53,7 @@ ddf['day and month']=ddf['month']+ddf['day']
 
 ddf=ddf.loc[date1:date2]
 
-no_defra_csv='/users/mtj507/scratch/defra_data/defra_no_eng_2019.csv'
+no_defra_csv='/users/mtj507/scratch/defra_data/defra_no_uk_2019.csv'
 noddf=pd.read_csv(no_defra_csv, low_memory=False)
 noddf.index=pd.to_datetime(noddf['Date'], dayfirst=True)+pd.to_timedelta(noddf['Time'])
 noddf=noddf.loc[:, ~noddf.columns.str.contains('^Unnamed')]
