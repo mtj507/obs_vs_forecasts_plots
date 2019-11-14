@@ -28,12 +28,9 @@ for environment in environments:
     check=pd.unique(metadata['Environment Type'])
     metadata=metadata.reset_index(drop=True)
     locations=metadata['Site Name']
-    latitude=metadata['Latitude']
-    longitude=metadata['Longitude']
     headers=locations.values.tolist()    
     headers.append('hour')  
     print(check)
-    no_locations=len(metadata.index)
     
  
     no2_defra_csv='/users/mtj507/scratch/defra_data/defra_no2_uk_2019.csv'
@@ -72,24 +69,40 @@ for environment in environments:
     noddf1=noddf1.astype(float)
     noddf1=noddf1.dropna(axis=1,how='all')
     
-    df=ddf1.append(noddf1, ignore_index=True)
+    df=pd.concat([ddf1, noddf1], axis=1)
+    df=df.dropna(axis=1, how='all')
+    df=df.drop('hour',axis=1)
+    a=ddf1.columns
+    b=noddf1.columns
+    nox_locations=set(a).intersection(b)
+    df=df.groupby(df.columns, axis=1).sum()
+    df=df.loc[:,nox_locations]
+    df['hour']=df.index.hour
     df_mean=df.groupby('hour').mean()
     df_mean['mean']=df_mean.mean(axis=1)
     df_std=df.groupby('hour').std()
     df_std['std']=df_std.std(axis=1)
     plt.plot(df_mean.index, df_mean['mean'], label='Observation', color='blue')
     plt.fill_between(df_mean.index, (df_mean['mean']+df_std['std']), (df_mean['mean']-df_std['std']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
-   
+  
 
+    metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
+    metadata=pd.read_csv(metadata_csv, low_memory=False)
+    metadata=metadata.loc[metadata['Environment Type']==environment]
+    metadata=metadata[metadata['Site Name'].isin(nox_locations)]
+    metadata=metadata.reset_index(drop=True)
+    locations=metadata['Site Name']
+    latitude=metadata['Latitude']
+    longitude=metadata['Longitude']
+    
+    no_locations=len(locations)
     days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
     mod_data = np.zeros((24,days_of_data,no_locations))
 
-    
 
     for x in np.arange(0, no_locations):
         print(f'{locations[x]}')
-            
 
         for j in range(len(dates)):
             forecast_date=f'2019{str(dates[j]).zfill(4)}'
