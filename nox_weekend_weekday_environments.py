@@ -176,7 +176,7 @@ for environment in environments:
     ddf['day']=ddf['day'].str.zfill(2)
     ddf['day and month']=ddf['month']+ddf['day']
     ddf=ddf.loc[date1:date2]
-    ddf=ddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
+    ddf=ddf.loc[(ddf['weekday'] >= 5) &(ddf['weekday'] <= 6)]
     ddf1=ddf.loc[:,headers]
     ddf1=ddf1.astype(float)
     ddf1=ddf1.dropna(axis=1,how='all')
@@ -195,7 +195,7 @@ for environment in environments:
     noddf['day']=noddf['day'].str.zfill(2)
     noddf['day and month']=noddf['month']+noddf['day']
     noddf=noddf[date1:date2]
-    noddf=noddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
+    noddf=noddf.loc[(ddf['weekday'] >= 5) & (ddf['weekday'] <= 6)]
     noddf1=noddf.loc[:,headers]
     noddf1=noddf1.astype(float)
     noddf1=noddf1.dropna(axis=1,how='all')
