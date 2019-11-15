@@ -111,7 +111,6 @@ for environment in environments:
         if i == 'pm25_rh35_gcc':
           i = 'pm25' 
         plt.plot(range(24),np.median(mod_data,axis=(1,2)),label='Model',color='maroon')
-#edit to work
         Q1=np.percentile(mod_data, 25, axis=(1,2))
         Q3=np.percentile(mod_data, 75, axis=(1,2))
         plt.fill_between(range(24), Q1, Q3, alpha=0.5, facecolor='red', edgecolor='red')
