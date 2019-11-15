@@ -52,8 +52,8 @@ for environment in environments:
 
         ddf['hour']=ddf.index.hour
         ddf=ddf.loc['2019-09-22':'2019-11-05']
-        ddf1=ddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
-        ddf1=ddf1.loc[:,headers] 
+        ddf=ddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
+        ddf1=ddf.loc[:,headers] 
         ddf1=ddf1.astype(float)
         ddf1=ddf1.dropna(axis=1,how='all')
         if (environment == 'Industrial Suburban' and i == 'pm25'):
@@ -144,8 +144,8 @@ for environment in environments:
 
         ddf['hour']=ddf.index.hour
         ddf=ddf.loc['2019-09-22':'2019-11-05']
-        ddf1=ddf.loc[(ddf['weekday'] >= 5) & (ddf['weekday'] <= 6)]
-        ddf1=ddf1.loc[:,headers] 
+        ddf=ddf.loc[(ddf['weekday'] >= 5) & (ddf['weekday'] <= 6)]
+        ddf1=ddf.loc[:,headers] 
         ddf1=ddf1.astype(float)
         ddf1=ddf1.dropna(axis=1,how='all')
         if (environment == 'Industrial Suburban' and m == 'pm25'):
