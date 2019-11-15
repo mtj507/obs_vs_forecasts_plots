@@ -185,7 +185,7 @@ for environment in environments:
                 lons=ds['lon'].data
                 model_lat=np.argmin(np.abs(latitude[y]-lats))
                 model_lon=np.argmin(np.abs(longitude[y]-lons))
-                df_model=pd.DataFrame(ds[i].data[:,0,model_lat, model_lon])
+                df_model=pd.DataFrame(ds[m].data[:,0,model_lat, model_lon])
                 df_model.index=ds.time.data
                 df_model.columns=[m]
                 df_model.index.name='date_time'
@@ -210,7 +210,7 @@ for environment in environments:
         plt.xlabel('Hour of Day')
         plt.ylabel(m + ' ug/m3')
         plt.legend()
-        plt.title(environment +' '+ i + ' weekend')
+        plt.title(environment +' '+ m + ' weekend')
         path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend/'
         plt.savefig(path+environment+'_'+m+' weekend')
         print('saved')
