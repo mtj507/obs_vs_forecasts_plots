@@ -66,7 +66,7 @@ for environment in environments:
     ozddf['day']=ozddf['day'].str.zfill(2)
     ozddf['day and month']=ozddf['month']+ozddf['day']
     ozddf=ozddf[date1:date2]
-    ozddf=ozddf.loc[(noddf['weekday'] >= 0) & (noddf['weekday'] <= 4)]
+    ozddf=ozddf.loc[(ozddf['weekday'] >= 0) & (ozddf['weekday'] <= 4)]
     ozddf1=ozddf.loc[:,headers]
     ozddf1=ozddf1.astype(float)
     ozddf1=ozddf1.dropna(axis=1,how='all')
