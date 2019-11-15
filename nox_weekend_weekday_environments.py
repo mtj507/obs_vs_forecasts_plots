@@ -66,7 +66,7 @@ for environment in environments:
     noddf['day']=noddf['day'].str.zfill(2)
     noddf['day and month']=noddf['month']+noddf['day']
     noddf=noddf[date1:date2]
-    noddf=noddf.loc[(ddf['weekday'] >= 0) & (ddf['weekday'] <= 4)]
+    noddf=noddf.loc[(noddf['weekday'] >= 0) & (noddf['weekday'] <= 4)]
     noddf1=noddf.loc[:,headers]
     noddf1=noddf1.astype(float)
     noddf1=noddf1.dropna(axis=1,how='all')
@@ -143,7 +143,7 @@ for environment in environments:
     plt.legend()
     plt.title(environment +' '+ 'NOx weekday')
     path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekday'
-    plt.savefig(path+environment+'_'+'nox weekday')
+    plt.savefig(path+environment+'_'+'nox_weekday')
     print('saved')
     plt.close() 
 
@@ -195,7 +195,7 @@ for environment in environments:
     noddf['day']=noddf['day'].str.zfill(2)
     noddf['day and month']=noddf['month']+noddf['day']
     noddf=noddf[date1:date2]
-    noddf=noddf.loc[(ddf['weekday'] >= 5) & (ddf['weekday'] <= 6)]
+    noddf=noddf.loc[(noddf['weekday'] >= 5) & (noddf['weekday'] <= 6)]
     noddf1=noddf.loc[:,headers]
     noddf1=noddf1.astype(float)
     noddf1=noddf1.dropna(axis=1,how='all')
@@ -272,7 +272,7 @@ for environment in environments:
     plt.legend()
     plt.title(environment +' '+ 'NOx weekend')
     path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend'
-    plt.savefig(path+environment+'_'+'nox weekend')
+    plt.savefig(path+environment+'_'+'nox_weekend')
     print('saved')
     plt.close() 
     
