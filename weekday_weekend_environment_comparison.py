@@ -120,7 +120,7 @@ for environment in environments:
         plt.legend()
         plt.title(environment +' '+ i + ' weekday')
         path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekday/'
-        plt.savefig(path+environment+'_'+i+' weekday')
+        plt.savefig(path+environment+'_'+i+'_weekday')
         print('saved')
         plt.close() 
 
@@ -212,7 +212,7 @@ for environment in environments:
         plt.legend()
         plt.title(environment +' '+ m + ' weekend')
         path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend/'
-        plt.savefig(path+environment+'_'+m+' weekend')
+        plt.savefig(path+environment+'_'+m+'_weekend')
         print('saved')
         plt.close() 
     
