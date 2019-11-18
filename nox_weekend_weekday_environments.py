@@ -98,7 +98,7 @@ for environment in environments:
     longitude=metadata['Longitude']
     
     no_locations=len(locations)
-    days_of_data=len(pd.unique(ddf1['day and month']))
+    days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
     mod_data = np.zeros((24,days_of_data,no_locations))
 
@@ -142,7 +142,7 @@ for environment in environments:
     plt.ylabel('NOx' + ' ug/m3')
     plt.legend()
     plt.title(environment +' '+ 'NOx weekday')
-    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekday'
+    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekday/'
     plt.savefig(path+environment+'_'+'nox_weekday')
     print('saved')
     plt.close() 
@@ -227,7 +227,7 @@ for environment in environments:
     longitude=metadata['Longitude']
     
     no_locations=len(locations)
-    days_of_data=len(pd.unique(ddf1['day and month']))
+    days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
     mod_data = np.zeros((24,days_of_data,no_locations))
 
@@ -271,7 +271,7 @@ for environment in environments:
     plt.ylabel('NOx' + ' ug/m3')
     plt.legend()
     plt.title(environment +' '+ 'NOx weekend')
-    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend'
+    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend/'
     plt.savefig(path+environment+'_'+'nox_weekend')
     print('saved')
     plt.close() 
