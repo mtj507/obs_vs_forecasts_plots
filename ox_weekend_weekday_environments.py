@@ -266,7 +266,7 @@ for environment in environments:
     plt.ylabel('Ox' + ' ug/m3')
     plt.legend()
     plt.title(environment +' '+ 'Ox weekend')
-    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend'
+    path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend/'
     plt.savefig(path+environment+'_'+'ox_weekend')
     print('saved')
     plt.close() 
