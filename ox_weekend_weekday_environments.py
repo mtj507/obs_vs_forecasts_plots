@@ -80,13 +80,22 @@ for environment in environments:
     df=df.groupby(df.columns, axis=1).sum()
     df=df.loc[:,ox_locations]
     df['hour']=df.index.hour
-    df_mean=df.groupby('hour').mean()
-    df_mean['mean']=df_mean.mean(axis=1)
-    df_std=df.groupby('hour').std()
-    df_std['std']=df_std.std(axis=1)
-    plt.plot(df_mean.index, df_mean['mean'], label='Observation', color='blue')
-    plt.fill_between(df_mean.index, (df_mean['mean']+df_std['std']), (df_mean['mean']-df_std['std']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
-   
+    df_median=df.groupby('hour').median()
+    df_median['median']=df_median.mean(axis=1)
+    df_Q1=df1.groupby('hour').quantile(0.25)
+    df_Q1['Q1']=df_Q1.mean(axis=1)
+    df_Q3=df1.groupby('hour').quantile(0.75)
+    df_Q3['Q3']=df_Q3.mean(axis=1)
+    plt.plot(df_median.index, df_median['median'], label='Observation', color='blue')
+    plt.fill_between(df_median.index, df_Q1['Q1'], df_Q3['Q3'], alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
+
+    obs_median=df_median['median'].mean()
+    obs_median=str(round(obs_median,2))
+    obs_Q1=ddf_Q1['Q1'].mean()
+    obs_Q1=str(round(obs_Q1,2))
+    obs_Q3=ddf_Q3['Q3'].mean()
+    obs_Q3=str(round(obs_Q3,2))
+
     metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
     metadata=pd.read_csv(metadata_csv, low_memory=False)
     metadata=metadata.loc[metadata['Environment Type']==environment]
@@ -141,6 +150,17 @@ for environment in environments:
     plt.ylabel('Ox' + ' ug/m3')
     plt.legend()
     plt.title(environment +' '+ 'Ox weekday')
+
+    nasa_median=np.median(mod_data)
+    nasa_median=str(round(nasa_median,2))
+    nasa_Q1=np.percentile(mod_data,25)
+    nasa_Q1=str(round(nasa_Q1,2))
+    nasa_Q3=np.percentile(mod_data,75)
+    nasa_Q3=str(round(nasa_Q3,2))
+
+    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
+
     path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekday/'
     plt.savefig(path+environment+'_'+'ox_weekday')
     print('saved')
@@ -205,13 +225,23 @@ for environment in environments:
     df=df.groupby(df.columns, axis=1).sum()
     df=df.loc[:,ox_locations]
     df['hour']=df.index.hour
-    df_mean=df.groupby('hour').mean()
-    df_mean['mean']=df_mean.mean(axis=1)
-    df_std=df.groupby('hour').std()
-    df_std['std']=df_std.std(axis=1)
-    plt.plot(df_mean.index, df_mean['mean'], label='Observation', color='blue')
-    plt.fill_between(df_mean.index, (df_mean['mean']+df_std['std']), (df_mean['mean']-df_std['std']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
-   
+
+    df_median=df.groupby('hour').median()
+    df_median['median']=df_median.mean(axis=1)
+    df_Q1=df1.groupby('hour').quantile(0.25)
+    df_Q1['Q1']=df_Q1.mean(axis=1)
+    df_Q3=df1.groupby('hour').quantile(0.75)
+    df_Q3['Q3']=df_Q3.mean(axis=1)
+    plt.plot(df_median.index, df_median['median'], label='Observation', color='blue')
+    plt.fill_between(df_median.index, df_Q1['Q1'], df_Q3['Q3'], alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
+
+    obs_median=df_median['median'].mean()
+    obs_median=str(round(obs_median,2))
+    obs_Q1=ddf_Q1['Q1'].mean()
+    obs_Q1=str(round(obs_Q1,2))
+    obs_Q3=ddf_Q3['Q3'].mean()
+    obs_Q3=str(round(obs_Q3,2))
+
     metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
     metadata=pd.read_csv(metadata_csv, low_memory=False)
     metadata=metadata.loc[metadata['Environment Type']==environment]
@@ -266,6 +296,17 @@ for environment in environments:
     plt.ylabel('Ox' + ' ug/m3')
     plt.legend()
     plt.title(environment +' '+ 'Ox weekend')
+
+    nasa_median=np.median(mod_data)
+    nasa_median=str(round(nasa_median,2))
+    nasa_Q1=np.percentile(mod_data,25)
+    nasa_Q1=str(round(nasa_Q1,2))
+    nasa_Q3=np.percentile(mod_data,75)
+    nasa_Q3=str(round(nasa_Q3,2))
+
+    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
+
     path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/weekend/'
     plt.savefig(path+environment+'_'+'ox_weekend')
     print('saved')
