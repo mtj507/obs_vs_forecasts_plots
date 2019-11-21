@@ -26,9 +26,9 @@ city='London'
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
-metadata=metadata.loc[metadata['Environment Type']==environment_type]
+#metadata=metadata.loc[metadata['Environment Type']==environment_type]
 #metadata=metadata[metadata['Site Name'].str.match(city)]
-#metadata=metadata.loc[metadata['Site Name']=='London N. Kensington']
+metadata=metadata.loc[metadata['Site Name']=='London Westminster']
 metadata=metadata.reset_index(drop=False)
 area=metadata['Zone']
 location=metadata['Site Name']
@@ -72,8 +72,6 @@ noddf['day and month']=noddf['month']+noddf['day']
 noddf=noddf[date1:date2]
 
 
-
-
 for i in np.arange(0, no_locations):
     ddf1=ddf.loc[:,['hour', f'{location[i]}']]
     noddf1=noddf.loc[:,[f'{location[i]}']]
@@ -82,10 +80,18 @@ for i in np.arange(0, no_locations):
     ddf1['no']=noddf1['no']
     ddf1['nox']=ddf1['no']+ddf1['no2']
     ddf1=ddf1.dropna(axis=0)
-    ddf_mean=ddf1.groupby('hour').mean()
-    ddf_std=ddf1.groupby('hour').std()
-    plt.plot(ddf_mean.index, ddf_mean['nox'], label='Observation', color='blue')
-    plt.fill_between(ddf_mean.index, (ddf_mean['nox']+ddf_std['nox']), (ddf_mean['nox']-ddf_std['nox']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
+    ddf_median=ddf1.groupby('hour').median()
+    ddf_Q1=ddf1.groupby('hour')['nox'].quantile(0.25)
+    ddf_Q3=ddf1.groupby('hour')['nox'].quantile(0.75)
+    plt.plot(ddf_median.index, ddf_median['nox'], label='Observation', color='blue')
+    plt.fill_between(ddf_median.index, ddf_Q1, ddf_Q3, alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')
+
+    obs_median=ddf_median['nox'].mean()
+    obs_median=str(round(obs_median,2))
+    obs_Q1=ddf_Q1.mean()
+    obs_Q1=str(round(obs_Q1,2))
+    obs_Q3=ddf_Q3.mean()
+    obs_Q3=str(round(obs_Q3,2))
 
     days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
@@ -128,11 +134,22 @@ for i in np.arange(0, no_locations):
     plt.ylabel('NOX ug/m3')
     plt.legend()
     plt.title(location[i])
-    path='/users/mtj507/scratch//obs_vs_forecast/plots/nox/full_week_diurnal/'
-    plt.savefig(path+'nox'+f'_{location[i]}_diurnal.png')
-    plt.close()
+    
+    nasa_median=np.median(mod_data)
+    nasa_median=str(round(nasa_median,2))
+    nasa_Q1=np.percentile(mod_data,25)
+    nasa_Q1=str(round(nasa_Q1,2))
+    nasa_Q3=np.percentile(mod_data,75)
+    nasa_Q3=str(round(nasa_Q3,2))
+    
+    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
+
+    path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/full_week_diurnal/'
+    #plt.savefig(path+'nox'+f'_{location[i]}_diurnal.png')
+    #plt.close()
     print(location[i])
-  
+    plt.show()
 
 
 
