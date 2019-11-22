@@ -148,27 +148,38 @@ for i in np.arange(0, no_locations):
     print(location[i])
 
 ax=plt.axes()
-graph_data={'obs median':obs_list,'obs Q1':obsQ1_list,'obs Q3':obsQ3_list,'forecast':nasa_list,'forecast Q1':nasaQ1_list,'forecast Q3':nasaQ3_list}
+graph_data={'obs':obs_list,'obs Q1':obsQ1_list,'obs Q3':obsQ3_list,'forecast':nasa_list,'forecast Q1':nasaQ1_list,'forecast Q3':nasaQ3_list}
 sdf=pd.DataFrame(graph_data)
 sdf=sdf[sdf > 0].dropna()
 sdf=sdf.dropna()
 sdf['obs_err']=sdf['obs Q3']-sdf['obs Q1']
 sdf['fcast_err']=sdf['forecast Q3']-sdf['forecast Q1']
 sdf=sdf.reset_index(drop=True)
-X=sdf['obs']
-Y=sdf['forecast']
-
-def linear_func(B, X):
-    return B[0]*X+B[1]
-linear_model=Model(linear_func)
-scatter_data=RealData(X,Y,)
-odr=ODR(scatter_data,linear_model,beta0[0.,1.])
-out=odr.run()
-out.pprint()
 
 plt.scatter(X,Y,color='red')
-plt.plot(np.unique(X), np.poly1d(np.polyfit(X, Y, 1))(np.unique(X)),color='black',alpha=0.8)
 ax.plot(ax.get_xlim(),ax.get_ylim(),linestyle='dashed',color='grey')
+
+x_data=sdf['obs']
+y_data=sdf['forecast']
+x_err=sdf['obs_err']
+y_err=sdf['fcast_err']
+
+def linear_func(p, x):
+    y=p*x
+    return y
+
+linear=Model(linear_func)
+datas=RealData(x_data,y_data,sx=x_err,sy=y_err)
+odr=ODR(datas,linear,beta0=[0])
+output=odr.run()
+#output.pprint()
+beta=output.beta
+betastd=output.sd_beta
+
+plt.plot(x_data,linear_func(beta,x_data),color='black',alpha=0.7)
+
+
+
 
 #plt.show()
 path='/users/mtj507/scratch/obs_vs_forecast/plots/scatter/'
