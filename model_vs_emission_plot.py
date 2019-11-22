@@ -26,6 +26,9 @@ if emission == 'o3':
   conv=2*10**9
 
 
+environment_type='Traffic Urban'
+
+
 week='weekend'
 
 if week == 'fullweek':
@@ -40,7 +43,6 @@ if week == 'weekend':
 
 #types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-environment_type='Background Rural'
 data_area='Greater London'
 city='London'
 
@@ -156,13 +158,15 @@ sdf['obs_err']=sdf['obs Q3']-sdf['obs Q1']
 sdf['fcast_err']=sdf['forecast Q3']-sdf['forecast Q1']
 sdf=sdf.reset_index(drop=True)
 
-plt.scatter(X,Y,color='red')
-ax.plot(ax.get_xlim(),ax.get_ylim(),linestyle='dashed',color='grey')
 
 x_data=sdf['obs']
 y_data=sdf['forecast']
 x_err=sdf['obs_err']
 y_err=sdf['fcast_err']
+
+plt.scatter(x_data,y_data,color='red')
+xy=np.linspace(*ax.get_xlim())
+plt.plot(xy,xy,linestyle='dashed',color='grey')
 
 def linear_func(p, x):
     y=p*x
@@ -179,11 +183,9 @@ betastd=output.sd_beta
 plt.plot(x_data,linear_func(beta,x_data),color='black',alpha=0.7)
 
 
-
-
 #plt.show()
 path='/users/mtj507/scratch/obs_vs_forecast/plots/scatter/'
-plt.savefig(path+week+'_'+emission+'_'+environment_type+'.png')
+plt.savefig(path+emission+'_'+environment_type+'_'+week+'.png')
 plt.close()
 
 
