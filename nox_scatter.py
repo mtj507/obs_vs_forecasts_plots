@@ -16,7 +16,7 @@ emission='no2'
 Emission='NO2'
 conv = 1.88*10**9
 
-environment_type='Background Urban'
+environment_type='Urban'
 
 week='fullweek'
 
@@ -41,17 +41,8 @@ city='London'
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
-metadata=metadata.loc[metadata['Environment Type']==environment_type]
-#metadata=metadata[metadata['Site Name'].str.match(city)]
-#metadata=metadata.loc[metadata['Site Name']=='London Westminster']
-metadata=metadata.reset_index(drop=False)
-area=metadata['Zone']
-location=metadata['Site Name']
-latitude=metadata['Latitude']
-longitude=metadata['Longitude']
-environment=metadata['Environment Type']
-no_locations=len(metadata.index)
-
+metadata=metadata.loc[metadata['Environment Type'].str.contains(environment_type)]
+a=list(metadata['Site Name'])
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
 no2_defra_csv='/users/mtj507/scratch/defra_data/defra_no2_uk_2019.csv'
@@ -60,6 +51,10 @@ ddf.index=pd.to_datetime(ddf['Date'], dayfirst=True)+pd.to_timedelta(ddf['Time']
 ddf=ddf.loc[:, ~ddf.columns.str.contains('^Unnamed')]
 ddf=ddf.dropna(axis=0)
 ddf=ddf.replace('No data', np.nan)
+b=list(ddf.columns)
+c=set(a).intersection(b)
+ddf=ddf[ddf.columns.intersection(c)]
+d=list(ddf.columns)
 ddf['hour']=ddf.index.hour
 ddf['weekday']=ddf.index.weekday
 ddf['month']=ddf.index.month.astype(str)
@@ -77,6 +72,9 @@ noddf.index=pd.to_datetime(noddf['Date'], dayfirst=True)+pd.to_timedelta(noddf['
 noddf=noddf.loc[:, ~noddf.columns.str.contains('^Unnamed')]
 noddf=noddf.dropna(axis=0)
 noddf=noddf.replace('No data', np.nan)
+e=list(noddf.columns)
+f=set(d).intersection(e)
+noddf=noddf[noddf.columns.intersection(f)]
 noddf['hour']=noddf.index.hour
 noddf['weekday']=noddf.index.weekday
 noddf['month']=noddf.index.month.astype(str)
@@ -88,9 +86,18 @@ noddf['day and month']=noddf['month']+noddf['day']
 noddf=noddf[date1:date2]
 noddf=noddf.loc[(noddf['weekday'] >= day1) & (noddf['weekday'] <= day2)]
 
+metadata=metadata[metadata['Site Name'].isin(c)]
+metadata=metadata.reset_index(drop=False)
+area=metadata['Zone']
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+environment=metadata['Environment Type']
+no_locations=len(metadata.index)
+
 plt.xlabel('Observation Median  ug/m3')
 plt.ylabel('Forecast Median  ug/m3')
-plt.title('NOX '+environment_type+' '+week)
+plt.title('NOx '+environment_type+' '+week)
 
 obs_list=[]
 obsQ1_list=[]
@@ -99,36 +106,42 @@ nasa_list=[]
 nasaQ1_list=[]
 nasaQ3_list=[]
 
+obslist1=[]
+obslist2=[]
+obslist3=[]
+
+modlist1=[]
+modlist2=[]
+modlist3=[]
+
+types=list(pd.unique(environment))
+
 for i in np.arange(0, no_locations):
-    try:
-      ddf1=ddf.loc[:,['hour', f'{location[i]}']]
-      noddf1=noddf.loc[:,[f'{location[i]}']]
-      ddf1['no2']=ddf1[f'{location[i]}'].astype(float)
-      noddf1['no']=noddf1[f'{location[i]}'].astype(float)
-      ddf1['no']=noddf1['no']
-      ddf1['nox']=ddf1['no']+ddf1['no2']
-      ddf1=ddf1.dropna(axis=0)
-      ddf_median=ddf1.groupby('hour').median()
-      ddf_Q1=ddf1.groupby('hour')['nox'].quantile(0.25)
-      ddf_Q3=ddf1.groupby('hour')['nox'].quantile(0.75)
+    ddf1=ddf.loc[:,['hour', f'{location[i]}']]
+    noddf1=noddf.loc[:,[f'{location[i]}']]
+    ddf1['no2']=ddf1[f'{location[i]}'].astype(float)
+    noddf1['no']=noddf1[f'{location[i]}'].astype(float)
+    ddf1['no']=noddf1['no']
+    ddf1['nox']=ddf1['no']+ddf1['no2']
+    ddf1=ddf1.dropna(axis=0)
+    ddf_median=ddf1.groupby('hour').median()
+    ddf_Q1=ddf1.groupby('hour')['nox'].quantile(0.25)
+    ddf_Q3=ddf1.groupby('hour')['nox'].quantile(0.75)
+    env=f'{environment[i]}'
+    obs_median=ddf_median['nox'].mean()
+    obs_median=float(round(obs_median,2))
+    obs_Q1=ddf_Q1.mean()
+    obs_Q1=float(round(obs_Q1,2))
+    obs_Q3=ddf_Q3.mean()
+    obs_Q3=float(round(obs_Q3,2))
 
-      obs_median=ddf_median['nox'].mean()
-      obs_median=float(round(obs_median,2))
-      obs_Q1=ddf_Q1.mean()
-      obs_Q1=float(round(obs_Q1,2))
-      obs_Q3=ddf_Q3.mean()
-      obs_Q3=float(round(obs_Q3,2))
+    obs_list.append(obs_median)
+    obsQ1_list.append(obs_Q1)
+    obsQ3_list.append(obs_Q3)
 
-      obs_list.append(obs_median)
-      obsQ1_list.append(obs_Q1)
-      obsQ3_list.append(obs_Q3)
-
-      days_of_data=len(pd.unique(ddf['day and month']))
-      dates=pd.unique(ddf['day and month'])
-      mod_data = np.zeros((24,days_of_data))  
-  
-    except KeyError:
-      continue
+    days_of_data=len(pd.unique(ddf['day and month']))
+    dates=pd.unique(ddf['day and month'])
+    mod_data = np.zeros((24,days_of_data))  
   
     for j in range(len(dates)):
         forecast_date=f'2019{str(dates[j]).zfill(4)}'
@@ -170,9 +183,21 @@ for i in np.arange(0, no_locations):
     nasaQ1_list.append(nasa_Q1)
     nasaQ3_list.append(nasa_Q3)
 
+    if len(types) >=1:
+      obslist1.append(obs_median)
+      label1=types[0]
+      modlist1.append(nasa_median)
+    if len(types) >=2:
+      obslist2.append(obs_median)
+      label2=types[1]
+      modlist2.append(nasa_median)
+    if len(types) >=3:
+      obslist3.append(obs_median)
+      label3=types[2]
+      modlist3.append(nasa_median)
+
     print(location[i])
 
-ax=plt.axes()
 graph_data={'obs':obs_list,'obs Q1':obsQ1_list,'obs Q3':obsQ3_list,'forecast':nasa_list,'forecast Q1':nasaQ1_list,'forecast Q3':nasaQ3_list}
 sdf=pd.DataFrame(graph_data)
 sdf=sdf[sdf > 0].dropna()
@@ -186,10 +211,6 @@ y_data=sdf['forecast']
 x_err=sdf['obs_err']
 y_err=sdf['fcast_err']
 
-plt.scatter(x_data,y_data,color='red')
-xy=np.linspace(*ax.get_xlim())
-plt.plot(xy,xy,linestyle='dashed',color='grey')
-
 def linear_func(p, x):
     y=p*x
     return y
@@ -198,7 +219,7 @@ linear=Model(linear_func)
 datas=RealData(x_data,y_data,sx=x_err,sy=y_err)
 odr=ODR(datas,linear,beta0=[0])
 output=odr.run()
-output.pprint()
+#output.pprint()
 beta=output.beta
 betastd=output.sd_beta
 
@@ -208,9 +229,24 @@ textbeta=float(output.beta)
 textbeta=str(round(textbeta,3))
 textbetastd=float(output.sd_beta)
 textbetastd=str(round(textbetastd,3))
+sites=str(no_locations)
 
-text=' Orthogonal Distance Regression: \n Gradient = '+textbeta+'\n Standard error = '+textbetastd
-plt.annotate(text,fontsize=7,xy=(0.01,0.85),xycoords='axes fraction')
+text=sites+' sites \n'+'Orthogonal Distance Regression: \n Gradient = '+textbeta+'\n Standard error = '+textbetastd
+
+plt.scatter(obslist1,modlist1,color='red',label=label1,marker='o')
+if len(types) >= 2: 
+  plt.scatter(obslist2,modlist2,color='blue',label=label2,marker='x')
+if len(types) >= 3:
+  plt.scatter(obslist3,modlist3,color='green',label=label3,marker='v')
+
+if len(types) == 1:
+  plt.annotate(text,fontsize=7,xy=(0.01,0.85),xycoords='axes fraction')
+if len(types) >= 2:
+  plt.legend(loc='best')
+  plt.annotate(text,fontsize=7,xy=(0.4,0.85),xycoords='axes fraction')
+
+xy=np.linspace(*plt.xlim())
+plt.plot(xy,xy,linestyle='dashed',color='grey')
 
 path='/users/mtj507/scratch/obs_vs_forecast/plots/scatter/'
 plt.savefig(path+'nox_'+environment_type+'_'+week+'.png')
