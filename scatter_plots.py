@@ -11,7 +11,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #defining emission to be observed and conversion (can be found in conversion file)
-emission='o3'
+emission='no2'
 
 environment_type='Urban'
 
@@ -96,8 +96,14 @@ obsQ3_list=[]
 nasa_list=[]
 nasaQ1_list=[]
 nasaQ3_list=[]
-color_list=[]
-label_list=[]
+
+obslist1=[]
+obslist2=[]
+obslist3=[]
+
+modlist1=[]
+modlist2=[]
+modlist3=[]
 
 types=list(pd.unique(environment))
 
@@ -119,15 +125,6 @@ for i in np.arange(0, no_locations):
     obs_list.append(obs_median)
     obsQ1_list.append(obs_Q1)
     obsQ3_list.append(obs_Q3)
-
-    label_list.append(env)
-
-    if env == types[0]:
-      color_list.append('red')
-    if env == types[1]:    
-      color_list.append('blue')
-    if env == types[2]:
-      color_list.append('green')
 
     days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
@@ -167,9 +164,21 @@ for i in np.arange(0, no_locations):
     nasaQ1_list.append(nasa_Q1)
     nasaQ3_list.append(nasa_Q3)
  
+    if env == types[0]:
+      obslist1.append(obs_median)
+      label1=types[0]
+      modlist1.append(nasa_median)
+    if env == types[1]:    
+      obslist2.append(obs_median)
+      label2=types[1]
+      modlist2.append(nasa_median)
+    if env == types[2]:
+      obslist3.append(obs_median)
+      label3=types[2]
+      modlist3.append(nasa_median)
+
     print(location[i])
 
-ax=plt.axes()
 graph_data={'obs':obs_list,'obs Q1':obsQ1_list,'obs Q3':obsQ3_list,'forecast':nasa_list,'forecast Q1':nasaQ1_list,'forecast Q3':nasaQ3_list}
 sdf=pd.DataFrame(graph_data)
 sdf=sdf[sdf > 0].dropna()
@@ -182,12 +191,6 @@ x_data=sdf['obs']
 y_data=sdf['forecast']
 x_err=sdf['obs_err']
 y_err=sdf['fcast_err']
-
-plt.scatter(x_data,y_data,color=color_list,label=label_list)
-plt.legend(pd.unique(label_list))
-
-xy=np.linspace(*ax.get_xlim())
-plt.plot(xy,xy,linestyle='dashed',color='grey')
 
 def linear_func(p, x):
     y=p*x
@@ -203,13 +206,24 @@ betastd=output.sd_beta
 
 plt.plot(x_data,linear_func(beta,x_data),color='black',alpha=0.7)
 
+plt.scatter(obslist1,modlist1,color='red',label=label1,marker='o')
+if len(types) >= 1:
+  plt.scatter(obslist2,modlist2,color='blue',label=label2,marker='x')
+if len(types) >=2:
+  plt.scatter(obslist3,modlist3,color='green',label=label3,marker='v')
+plt.legend(loc='best')
+
 textbeta=float(output.beta)
 textbeta=str(round(textbeta,3))
 textbetastd=float(output.sd_beta)
 textbetastd=str(round(textbetastd,3))
 
-text=' Orthogonal Distance Regression: \n Gradient = '+textbeta+'\n Standard error = '+textbetastd
-plt.annotate(text,fontsize=7,xy=(0.01,0.85),xycoords='axes fraction')
+sites=str(no_locations)
+text=sites+' sites \n'+'Orthogonal Distance Regression: \n Gradient = '+textbeta+'\n Standard error = '+textbetastd
+plt.annotate(text,fontsize=7,xy=(0.4,0.85),xycoords='axes fraction')
+
+xy=np.linspace(*plt.xlim())
+plt.plot(xy,xy,linestyle='dashed',color='grey')
 
 #plt.show()
 path='/users/mtj507/scratch/obs_vs_forecast/plots/scatter/'
