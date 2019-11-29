@@ -17,6 +17,9 @@ environment_type='Urban'
 
 week='fullweek'
 
+date1='2019-09-22'
+date2-'2019-11-05'
+
 if emission == 'no2':
   conv=1.88*10**9
   nasa_emission='no2'
@@ -74,7 +77,7 @@ ddf['day']=ddf['day'].str.zfill(2)
 ddf['day and month']=ddf['month']+ddf['day']
 ddf['hour']=ddf.index.hour
 
-ddf=ddf.loc['2019-09-22':'2019-11-05']
+ddf=ddf.loc[date1:date2]
 ddf=ddf.loc[(ddf['weekday'] >= day1) & (ddf['weekday'] <= day2)]
 
 metadata=metadata[metadata['Site Name'].isin(c)]
@@ -164,15 +167,15 @@ for i in np.arange(0, no_locations):
     nasaQ1_list.append(nasa_Q1)
     nasaQ3_list.append(nasa_Q3)
  
-    if env == types[0]:
+    if len(types) >= 1:
       obslist1.append(obs_median)
       label1=types[0]
       modlist1.append(nasa_median)
-    if env == types[1]:    
+    if len(types) >= 2:    
       obslist2.append(obs_median)
       label2=types[1]
       modlist2.append(nasa_median)
-    if env == types[2]:
+    if len(types) >=3:
       obslist3.append(obs_median)
       label3=types[2]
       modlist3.append(nasa_median)
@@ -206,21 +209,25 @@ betastd=output.sd_beta
 
 plt.plot(x_data,linear_func(beta,x_data),color='black',alpha=0.7)
 
-plt.scatter(obslist1,modlist1,color='red',label=label1,marker='o')
-if len(types) >= 1:
-  plt.scatter(obslist2,modlist2,color='blue',label=label2,marker='x')
-if len(types) >=2:
-  plt.scatter(obslist3,modlist3,color='green',label=label3,marker='v')
-plt.legend(loc='best')
-
 textbeta=float(output.beta)
 textbeta=str(round(textbeta,3))
 textbetastd=float(output.sd_beta)
 textbetastd=str(round(textbetastd,3))
-
 sites=str(no_locations)
+
 text=sites+' sites \n'+'Orthogonal Distance Regression: \n Gradient = '+textbeta+'\n Standard error = '+textbetastd
-plt.annotate(text,fontsize=7,xy=(0.4,0.85),xycoords='axes fraction')
+
+plt.scatter(obslist1,modlist1,color='red',label=label1,marker='o')
+if len(types) >= 2:
+  plt.scatter(obslist2,modlist2,color='blue',label=label2,marker='x')
+if len(types) >= 3:
+  plt.scatter(obslist3,modlist3,color='green',label=label3,marker='v')
+
+if len(types) == 1:
+  plt.annotate(text,fontsize=7,xy=(0.01,0.85),xycoords='axes fraction')
+if len(types) >= 2:
+  plt.legend(loc='best')
+  plt.annotate(text,fontsize=7,xy=(0.4,0.85),xycoords='axes fraction')
 
 xy=np.linspace(*plt.xlim())
 plt.plot(xy,xy,linestyle='dashed',color='grey')
