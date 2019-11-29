@@ -167,18 +167,35 @@ for i in np.arange(0, no_locations):
     nasaQ1_list.append(nasa_Q1)
     nasaQ3_list.append(nasa_Q3)
  
-    if len(types) >= 1:
-      obslist1.append(obs_median)
-      label1=types[0]
-      modlist1.append(nasa_median)
-    if len(types) >= 2:    
-      obslist2.append(obs_median)
-      label2=types[1]
-      modlist2.append(nasa_median)
+    if len(types) == 1:
+      if env == types[0]:
+        obslist1.append(obs_median)
+        label1=types[0]
+        modlist1.append(nasa_median)
+
+    if len(types) == 2:
+      if env == types[0]:
+        obslist1.append(obs_median)
+        label1=types[0]
+        modlist1.append(nasa_median)
+      if env == types[1]:
+        obslist2.append(obs_median)
+        label2=types[1]
+        modlist2.append(nasa_median)
+
     if len(types) >=3:
-      obslist3.append(obs_median)
-      label3=types[2]
-      modlist3.append(nasa_median)
+      if env == types[0]:
+        obslist1.append(obs_median)
+        label1=types[0]
+        modlist1.append(nasa_median)
+      if env == types[1]:
+        obslist2.append(obs_median)
+        label2=types[1]
+        modlist2.append(nasa_median)
+      if env == types[2]:
+        obslist3.append(obs_median)
+        label3=types[2]
+        modlist3.append(nasa_median)
 
     print(location[i])
 
