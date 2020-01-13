@@ -20,22 +20,15 @@ date2='2019-11-04'
 
 #types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-environment_type='Background Urban'
+environment_type='Background Rural'
 data_area='Greater London'
 city='London'
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
-#metadata=metadata.loc[metadata['Environment Type']==environment_type]
+metadata=metadata.loc[metadata['Environment Type']==environment_type]
 #metadata=metadata[metadata['Site Name'].str.match(city)]
-metadata=metadata.loc[metadata['Site Name']=='London Westminster']
-metadata=metadata.reset_index(drop=False)
-area=metadata['Zone']
-location=metadata['Site Name']
-latitude=metadata['Latitude']
-longitude=metadata['Longitude']
-environment=metadata['Environment Type']
-no_locations=len(metadata.index)
+#metadata=metadata.loc[metadata['Site Name']=='London Westminster']
 
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
@@ -69,7 +62,16 @@ noddf['day']=noddf.index.day.astype(str)
 noddf['day']=noddf['day'].str.zfill(2)
 noddf['day and month']=noddf['month']+noddf['day']
 
-noddf=noddf[date1:date2]
+noddf=noddf[date1:date2] 
+
+metadata=metadata[metadata['Site Name'].isin(ddf.columns)]
+metadata=metadata.reset_index(drop=False)
+area=metadata['Zone']
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+environment=metadata['Environment Type']
+no_locations=len(metadata.index)
 
 
 for i in np.arange(0, no_locations):
@@ -96,7 +98,7 @@ for i in np.arange(0, no_locations):
     days_of_data=len(pd.unique(ddf['day and month']))
     dates=pd.unique(ddf['day and month'])
     mod_data = np.zeros((24,days_of_data))  
-    
+  
     for j in range(len(dates)):
         forecast_date=f'2019{str(dates[j]).zfill(4)}'
         f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
@@ -146,10 +148,9 @@ for i in np.arange(0, no_locations):
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/full_week_diurnal/'
-    #plt.savefig(path+'nox'+f'_{location[i]}_diurnal.png')
-    #plt.close()
+    plt.savefig(path+'nox'+f'_{location[i]}_diurnal.png')
+    plt.close()
     print(location[i])
-    plt.show()
 
 
 
