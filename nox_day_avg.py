@@ -26,9 +26,9 @@ city='London'
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
-metadata=metadata.loc[metadata['Environment Type']==environment_type]
+#metadata=metadata.loc[metadata['Environment Type']==environment_type]
 #metadata=metadata[metadata['Site Name'].str.match(city)]
-#metadata=metadata.loc[metadata['Site Name']=='London Westminster']
+metadata=metadata.loc[metadata['Site Name']=='London Westminster']
 
 
 #change to UTF csv before moving across to Viking and edit doc so its easy to import by deleting first 3 rowns and moving time and date column headers into same row as locations. Delete empty rows up to 'end' at bottom and format time cells to time.
@@ -143,8 +143,15 @@ for i in np.arange(0, no_locations):
     nasa_Q1=str(round(nasa_Q1,2))
     nasa_Q3=np.percentile(mod_data,75)
     nasa_Q3=str(round(nasa_Q3,2))
-    
-    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+   
+    def rmse(predictions, targets):
+        return np.sqrt(((predictions-targets)**2).mean())
+
+    rmse_val=rmse(np.median(mod_data,1),ddf_median['nox'])
+    rmse_txt=str(round(rmse_val,2))
+
+    text=' RMSE = '+rmse_txt+' ug/m3' 
+#    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Model median = ' + nasa_median + ' ug/m3 \n Model IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/full_week_diurnal/'
