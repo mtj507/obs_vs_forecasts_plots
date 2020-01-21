@@ -19,7 +19,6 @@ environments=pd.unique(environment)
 emissions=['no2', 'no', 'pm25', 'o3']
 
 
-
 for environment in environments:
     metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
     metadata=pd.read_csv(metadata_csv, low_memory=False)
@@ -135,8 +134,14 @@ for environment in environments:
         nasa_Q3=np.percentile(mod_data,75)
         nasa_Q3=str(round(nasa_Q3,2))
 
+        def rmse(predictions, targets):
+            return np.sqrt(((predictions-targets)**2).mean())
+ 
+        rmse_val=rmse(np.median(mod_data,axis=(1,2)),ddf_median['median'])
+        rmse_txt=str(round(rmse_val,2))
 
-        text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+        text=' RMSE = '+rmse_txt+' ug/m3'
+    #    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
         plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
         path='/users/mtj507/scratch/obs_vs_forecast/plots/environments/full_week/'
