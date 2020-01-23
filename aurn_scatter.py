@@ -10,7 +10,7 @@ from scipy.odr import *
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-emission='pm25'
+emission='no'
 
 week='fullweek'
 
@@ -262,7 +262,7 @@ def linear_func(p, x):
 
 aurn_data={'obs':aurn_list,'obs Q1':aurn_Q1_list,'obs Q3':aurn_Q3_list,'mod':mod_list,'mod Q1':mod_Q1_list,'mod Q3':mod_Q3_list}
 aurn_df=pd.DataFrame(aurn_data)
-aurn_df=aurn_df[aurn_df > 0].dropna()
+aurn_df=aurn_df[aurn_df['mod Q3'] > 0].dropna()
 aurn_df=aurn_df.dropna()
 aurn_df['obs_err']=aurn_df['obs Q3']-aurn_df['obs Q1']
 aurn_df['mod_err']=aurn_df['mod Q3']-aurn_df['mod Q1']
@@ -270,7 +270,7 @@ aurn_df=aurn_df.reset_index(drop=True)
 
 bu_data={'obs':obs_BU_list,'obs Q1':obs_BU_Q1_list,'obs Q3':obs_BU_Q3_list,'mod':mod_BU_list,'mod Q1':mod_BU_Q1_list,'mod Q3':mod_BU_Q3_list}
 bu_df=pd.DataFrame(bu_data)
-bu_df=bu_df[bu_df > 0].dropna()
+bu_df=bu_df[bu_df['mod Q3'] > 0].dropna()
 bu_df=bu_df.dropna()
 bu_df['obs_err']=bu_df['obs Q3']-bu_df['obs Q1']
 bu_df['mod_err']=bu_df['mod Q3']-bu_df['mod Q1']
@@ -278,7 +278,7 @@ bu_df=bu_df.reset_index(drop=True)
 
 br_data={'obs':obs_BR_list,'obs Q1':obs_BR_Q1_list,'obs Q3':obs_BR_Q3_list,'mod':mod_BR_list,'mod Q1':mod_BR_Q1_list,'mod Q3':mod_BR_Q3_list}
 br_df=pd.DataFrame(br_data)
-br_df=br_df[br_df > 0].dropna()
+br_df=br_df[br_df['mod Q3'] > 0].dropna()
 br_df=br_df.dropna()
 br_df['obs_err']=br_df['obs Q3']-br_df['obs Q1']
 br_df['mod_err']=br_df['mod Q3']-br_df['mod Q1']
@@ -286,7 +286,7 @@ br_df=br_df.reset_index(drop=True)
 
 tu_data={'obs':obs_TU_list,'obs Q1':obs_TU_Q1_list,'obs Q3':obs_TU_Q3_list,'mod':mod_TU_list,'mod Q1':mod_TU_Q1_list,'mod Q3':mod_TU_Q3_list}
 tu_df=pd.DataFrame(tu_data)
-tu_df=tu_df[tu_df > 0].dropna()
+tu_df=tu_df[tu_df['mod Q3'] > 0].dropna()
 tu_df=tu_df.dropna()
 tu_df['obs_err']=tu_df['obs Q3']-tu_df['obs Q1']
 tu_df['mod_err']=tu_df['mod Q3']-tu_df['mod Q1']
@@ -294,7 +294,7 @@ tu_df=tu_df.reset_index(drop=True)
 
 iu_data={'obs':obs_IU_list,'obs Q1':obs_IU_Q1_list,'obs Q3':obs_IU_Q3_list,'mod':mod_IU_list,'mod Q1':mod_IU_Q1_list,'mod Q3':mod_IU_Q3_list}
 iu_df=pd.DataFrame(iu_data)
-iu_df=iu_df[iu_df > 0].dropna()
+iu_df=iu_df[iu_df['mod Q3'] > 0].dropna()
 iu_df=iu_df.dropna()
 iu_df['obs_err']=iu_df['obs Q3']-iu_df['obs Q1']
 iu_df['mod_err']=iu_df['mod Q3']-iu_df['mod Q1']
@@ -302,7 +302,7 @@ iu_df=iu_df.reset_index(drop=True)
 
 bs_data={'obs':obs_BS_list,'obs Q1':obs_BS_Q1_list,'obs Q3':obs_BS_Q3_list,'mod':mod_BS_list,'mod Q1':mod_BS_Q1_list,'mod Q3':mod_BS_Q3_list}
 bs_df=pd.DataFrame(bs_data)
-bs_df=bs_df[bs_df > 0].dropna()
+bs_df=bs_df[bs_df['mod Q3'] > 0].dropna()
 bs_df=bs_df.dropna()
 bs_df['obs_err']=bs_df['obs Q3']-bs_df['obs Q1']
 bs_df['mod_err']=bs_df['mod Q3']-bs_df['mod Q1']
@@ -310,7 +310,7 @@ bs_df=bs_df.reset_index(drop=True)
 
 is_data={'obs':obs_IS_list,'obs Q1':obs_IS_Q1_list,'obs Q3':obs_IS_Q3_list,'mod':mod_IS_list,'mod Q1':mod_IS_Q1_list,'mod Q3':mod_IS_Q3_list}
 is_df=pd.DataFrame(is_data)
-is_df=is_df[is_df > 0].dropna()
+is_df=is_df[is_df['mod Q3'] > 0].dropna()
 is_df=is_df.dropna()
 is_df['obs_err']=is_df['obs Q3']-is_df['obs Q1']
 is_df['mod_err']=is_df['mod Q3']-is_df['mod Q1']
