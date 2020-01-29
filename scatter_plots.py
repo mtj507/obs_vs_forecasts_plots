@@ -11,14 +11,14 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #defining emission to be observed and conversion (can be found in conversion file)
-emission='no2'
+emission='pm25'
 
 environment_type='Urban'
 
 week='fullweek'
 
 date1='2019-09-22'
-date2-'2019-11-05'
+date2='2019-11-05'
 
 if emission == 'no2':
   conv=1.88*10**9

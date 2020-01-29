@@ -18,7 +18,7 @@ date2='2019-11-04'
 
 #types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
 
-environment_type='Background Urban'
+environment_type='Background Rural'
 data_area='Greater London'
 city='London'
 
@@ -26,7 +26,7 @@ metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
 #metadata=metadata.loc[metadata['Environment Type']==environment_type]
 #metadata=metadata[metadata['Site Name'].str.match(city)]
-metadata=metadata.loc[metadata['Site Name']=='London N. Kensington']
+metadata=metadata.loc[metadata['Site Name']=='London Westminster']
 metadata=metadata.reset_index(drop=False)
 area=metadata['Zone']
 location=metadata['Site Name']
@@ -141,7 +141,14 @@ for i in np.arange(0, no_locations):
     nasa_Q3=np.percentile(mod_data,75)
     nasa_Q3=str(round(nasa_Q3,2))
 
-    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    def rmse(predictions, targets):
+        return np.sqrt(((predictions-targets)**2).mean())
+
+    rmse_val=rmse(np.median(mod_data,1),ddf_median['nox'])
+    rmse_txt=str(round(rmse_val,2))
+
+    text=' RMSE = '+rmse_txt+' ug/m3'
+#    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/weekend_weekday_diurnal/'
@@ -206,8 +213,6 @@ for x in np.arange(0, no_locations):
             mod_data[z,y] = df_model['nox'].loc[df_model['Hour'] == z].values[0]
 
 
-
-
     plt.plot(range(24),np.median(mod_data,1),label='Model',color='maroon')
     Q1=np.percentile(mod_data, 25, axis=1)
     Q3=np.percentile(mod_data, 75, axis=1)
@@ -224,7 +229,14 @@ for x in np.arange(0, no_locations):
     nasa_Q3=np.percentile(mod_data,75)
     nasa_Q3=str(round(nasa_Q3,2))
 
-    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    def rmse(predictions, targets):
+        return np.sqrt(((predictions-targets)**2).mean())
+
+    rmse_val=rmse(np.median(mod_data,1),ddf_median['nox'])
+    rmse_txt=str(round(rmse_val,2))
+
+    text=' RMSE = '+rmse_txt+' ug/m3'
+#    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/nox/weekend_weekday_diurnal/'

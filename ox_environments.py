@@ -102,7 +102,6 @@ for environment in environments:
 
     for x in np.arange(0, no_locations):
         print(f'{locations[x]}')
-             
 
         for j in range(len(dates)):
             forecast_date=f'2019{str(dates[j]).zfill(4)}'

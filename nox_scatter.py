@@ -18,7 +18,7 @@ conv = 1.88*10**9
 
 environment_type='Urban'
 
-week='fullweek'
+week='weekend'
 
 if week == 'fullweek':
   day1=0
@@ -35,9 +35,6 @@ date1='2019-09-22'
 date2='2019-11-04'
 
 #types of environment: Background Urban , Traffic Urban , Industrial Urban , Background Rural , Industrial Suburban , Background Suburban .
-
-data_area='Greater London'
-city='London'
 
 metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)

@@ -124,7 +124,14 @@ for i in np.arange(0, no_locations):
     nasa_Q3=np.percentile(mod_data,75)
     nasa_Q3=str(round(nasa_Q3,2))
 
-    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    def rmse(predictions, targets):
+        return np.sqrt(((predictions-targets)**2).mean())
+
+    rmse_val=rmse(np.median(mod_data,1),ddf_median['value'])
+    rmse_txt=str(round(rmse_val,2))
+
+    text=' RMSE = '+rmse_txt+' ug/m3'
+#    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/'+emission+'/weekend_weekday_diurnal/'
@@ -196,13 +203,21 @@ for x in np.arange(0, no_locations):
     nasa_Q3=np.percentile(mod_data,75)
     nasa_Q3=str(round(nasa_Q3,2))
 
-    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
+    def rmse(predictions, targets):
+        return np.sqrt(((predictions-targets)**2).mean())
+
+    rmse_val=rmse(np.median(mod_data,1),ddf_median['value'])
+    rmse_txt=str(round(rmse_val,2))
+
+    text=' RMSE = '+rmse_txt+' ug/m3'
+#    text=' Obs median = ' + obs_median + ' ug/m3 \n Obs IQR = ' + obs_Q1 + ' - ' + obs_Q3 + ' ug/m3 \n Forecast median = ' + nasa_median + ' ug/m3 \n Forecast IQR = ' + nasa_Q1 + ' - ' + nasa_Q3 + ' ug/m3'
     plt.annotate(text, fontsize=7, xy=(0.01, 0.85), xycoords='axes fraction')
 
     path='/users/mtj507/scratch/obs_vs_forecast/plots/'+emission+'/weekend_weekday_diurnal/'
     plt.savefig(path+emission+f'_{location[x]}_weekend_diurnal.png')
     plt.close()
     print(location[x])
+    plt.show()
 
 
 

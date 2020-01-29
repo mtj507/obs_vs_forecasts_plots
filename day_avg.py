@@ -7,8 +7,6 @@ import numpy as np
 import openaq
 from datetime import datetime
 from matplotlib.backends.backend_pdf import PdfPages
-from itertools import chain
-
 
 #defining emission to be observed and conversion (can be found in conversion file)
 emission='no2'
@@ -16,9 +14,9 @@ Emission='NO2'
 conv = 1.88*10**9
 
 #defining cities from whhich to extract data
-city_1='York'
-city_2='York'
-city_3='York'
+city_1='Leeds'
+city_2='Leeds'
+city_3='Leeds'
 
 api=openaq.OpenAQ()
 opendata=api.measurements(df=True, country='GB', parameter=emission, limit=10000) 
@@ -34,24 +32,25 @@ no_locations=len(df.index)  #counting number of indexes for use in np.aranges
 
 
 api=openaq.OpenAQ()
-#openaq data in local time.
+#openaq data has both utc and local time so use date.utc
 for i in np.arange(0,no_locations):
     data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
-    data['date.utc'] = data['date.utc']
     time=data['date.utc'].index.hour
     df1=pd.DataFrame(data)
     df1['time']=time
     df2=df1.drop(columns=['date.utc'])
-    df2=df2.groupby('time').mean()
-    plt.plot(df2.index, df2['value'], label='Observation')
-     
- 
-    mod_data = np.zeros((24,23))
+    df_mean=df2.groupby('time').mean()
+    df_std=df2.groupby('time').std()
+    plt.plot(df_mean.index, df_mean['value'], label='Observation', color='blue')
+    plt.fill_between(df_mean.index, (df_mean['value']+df_std['value']), (df_mean['value']-df_std['value']), alpha=0.5, facecolor='turquoise', edgecolor='deepskyblue')   
+   
     
-    dates=chain(range(922,930), range(1001,1016))
+    mod_data = np.zeros((24,23))  #ensure 2nd number here is equal to number of days being used
+    
+    dates=np.append(np.arange(922,930), np.arange(1001,1016))
  
-    for j in dates:
-        forecast_date=f'2019{str(j).zfill(4)}'
+    for j in range(len(dates)):
+        forecast_date=f'2019{str(dates[j]).zfill(4)}'
         f='/users/mtj507/scratch/nasa_forecasts/forecast_'+forecast_date+'.nc'
         ds=xr.open_dataset(f)
         spec=ds[emission].data
@@ -70,22 +69,21 @@ for i in np.arange(0,no_locations):
         df_model=df_model.sort_index() 
         df_model[emission]=df_model[emission]*conv       
          
-        for dates in range(922,930):
-            for k in range(24):
-             mod_data[k,dates-922] = df_model[emission].loc[df_model['Hour'] == k].values[0]
+        for k in range(24):
+            mod_data[k,j] = df_model[emission].loc[df_model['Hour'] == k].values[0]
         
-        for dates in range(1001,1016):
-            for k in range(24):
-             mod_data[k,dates-1001] = df_model[emission].loc[df_model['Hour'] == k].values[0]
 
 
-
-    plt.plot(range(24),np.mean(mod_data,1),label='Model',color='red')
+    plt.plot(range(24),np.median(mod_data,1),label='Model',color='maroon')
+    Q1=np.percentile(mod_data, 25, axis=1)
+    Q3=np.percentile(mod_data, 75, axis=1)
+    plt.fill_between(range(24), Q1, Q3, alpha=0.5, facecolor='red', edgecolor='red') 
     plt.xlabel('Hour of Day')
     plt.ylabel(Emission + ' ug/m3')
     plt.legend()
     plt.title(location[i])
-    plt.savefig('/users/mtj507/scratch//obs_vs_forecast/plots/'+emission+f'_{location[i]}_comparison.png')
+    path='/users/mtj507/scratch//obs_vs_forecast/plots/'+emission
+    plt.savefig(path+'/'+emission+f'_{location[i]}_comparison.png')
     plt.close()
     print(location[i])
   

@@ -12,21 +12,21 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-#defining emission to be observed
+#defining emission to be observed and conversion (can be found in conversion file in same directory as this)
 emission='no2'
 Emission='NO2'
-conv = 1
+conv = 1.88*10**9
 
 #setting up plot
 fig,ax = plt.subplots()
 ax.set_xlabel('Date')
-ax.set_ylabel(Emission + '/ug m-3')
+ax.set_ylabel(Emission+'/ug m-3')
 ax.set_ylim([0,100])
 ax.set_xlim([datetime(2019, 9, 21),datetime(2019, 10, 6)  ]) 
 ax.xaxis.set_major_formatter(DateFormatter("%m-%d-%y %H:%M"))
 ax.grid(True)
 
-#defining cities from whhich to extract data
+#defining cities from which to extract data
 city_1='York'
 city_2='York'
 city_3='York'
@@ -42,13 +42,14 @@ latitude=df['latitude']
 longitude=df['longitude']
 color=df['color']
 no_locations=len(df.index)  #counting number of indexes for use in np.aranges
-df
 
 #plotting openaq data
 api = openaq.OpenAQ()
 for i in np.arange(0, no_locations):
   data=api.measurements(df=True, city=f'{city[i]}', parameter=emission, location=f'{location[i]}', limit=1000)
-  ax.plot(data['date.utc'], data['value'], color=f'{color[i]}', label=f'PM 2.5 {location[i]}')
+  data = data.sort_values('date.utc')
+  data['date.utc'] = data['date.utc']+pd.Timedelta('30 min')#accounting for 30 min delay behind model
+  ax.plot(data['date.utc'], data['value'], color=f'{color[i]}', label=Emission+f' {location[i]}')
   plt.legend()  
 
 #plotting forecast data for j-desired cities and i-desired dates
@@ -60,7 +61,8 @@ for j in np.arange(0, no_locations):
     spec=ds[emission].data
     lats=ds['lat'].data
     lons=ds['lon'].data
-    spec=ds[emission].sel(lat=f'{latitude[j]}', lon=f'{longitude[j]}', method='nearest').data*1.88*10**9
+    spec=ds[emission].sel(lat=f'{latitude[j]}', lon=f'{longitude[j]}', method='nearest').data*conv
+    #defining number of hours forecast lasts (out of a possible 120)
     spec=spec[0:23]
     time=ds.time.data[0:23]
     ax.plot(time, spec, linestyle= ':', color=f'{color[j]}')
@@ -68,7 +70,7 @@ for j in np.arange(0, no_locations):
 #setting colour of forecast data separately otherwise multiplle iteratiosn appear in legend. 
 #for i in range(len(location.unique())):
 for i in np.arange(0, no_locations):
-  plt.plot([],[], linestyle=':', color=f'{color[i]}',label=f'PM 2.5 Forecast {location[i]}', alpha=1)
+  plt.plot([],[], linestyle=':', color=f'{color[i]}',label=Emission+f' Forecast {location[i]}', alpha=1)
   plt.legend()
 
 
