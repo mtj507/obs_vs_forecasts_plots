@@ -13,18 +13,14 @@ import seaborn as sns
 from scipy.odr import *
 
 
-emission='pm25'
+emission='no'
 
 fig=plt.figure(figsize=[20,20])
-fig,ax=plt.subplots(2,2,figsize=[10,10],subplot_kw=dict(aspect='equal'))
+fig,ax=plt.subplots(2,2,figsize=[8,8])
 
 print(emission)
-env_list=['AURN','Background Urban','Traffic Urban','Background Rural','Industrial urban','Industrial Suburban','background Suburban']
+env_list=['AURN','Background Urban','Background Rural','Traffic Urban','Industrial urban','Industrial Suburban','background Suburban']
 env_no=4
-
-if emission == 'o3':
-    env_list=['AURN','Background Urban','Background Rural']
-    env_no=3
 
 week='fullweek'
 
@@ -204,12 +200,16 @@ for e in range(env_no):
         ax.ravel()[e].set_ylabel('')
     if e == 0 or e == 1:
         ax.ravel()[e].set_xlabel('')
-
+    if emission == 'o3':
+        ax.ravel()[3].set_visible(False)
     ax.ravel()[e].set_title(env_type)
+
+    ax.ravel()[e].axis('square')
 
     xy=np.linspace(*ax.ravel()[e].get_xlim())
     ax.ravel()[e].plot(xy,xy,linestyle='dashed',color='grey')
 
+fig.tight_layout()
 path='/users/mtj507/scratch//obs_vs_forecast/assimilation_scripts/plots/whole_year/'+emission+'/'
 plt.savefig(path+emission+'_site_scatter_2019.png')
 plt.close()
