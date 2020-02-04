@@ -17,7 +17,7 @@ palette=sns.color_palette(['green','grey'])
 
 emission='no2'
 print(emission)
-env_list=['AURN','Background Urban','Traffic Urban','Background Rural','Industrial urban','Industrial Suburban','background Suburban']
+env_list=['AURN','Background Urban','Background Rural','Traffic Urban','Industrial urban','Industrial Suburban','background Suburban']
 env_no=4
  
 #env_type='AURN'
