@@ -12,16 +12,20 @@ register_matplotlib_converters()
 import seaborn as sns
 from scipy.odr import *
 
-fig=plt.figure(figsize=[10,10])
-fig,ax=plt.subplots(2,2,subplot_kw=dict(aspect='equal'))
+emission='no2'
 
-emission='o3'
+fig=plt.figure(figsize=[20,20])
+fig,ax=plt.subplots(2,2,figsize=[8,8])
+
 
 print(emission)
-env_list=['AURN','Background Urban','Traffic Urban','Background Rural','Industrial urban','Industrial Suburban','background Suburban']
+env_list=['AURN','Background Urban','Background Rural','Traffic Urban','Industrial urban','Industrial Suburban','background Suburban']
 env_no=4
  
-#env_type='AURN'
+
+if emission == 'o3':
+    env_list=['AURN','Background Urban','Background Rural']
+    env_no=3
 
 week='fullweek'
 
@@ -62,8 +66,12 @@ def linear_func(p, x):
     y=p*x
     return y
 
+def rmse(predictions, targets):
+    return np.sqrt(((predictions-targets)**2).mean())
+
 for e in range(env_no):
     env_type=env_list[e]
+    print(env_type)
     if env_type == 'AURN':
         env_type=' '
 
@@ -71,8 +79,6 @@ for e in range(env_no):
     metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
     metadata=pd.read_csv(metadata_csv, low_memory=False)
     metadata=metadata.loc[metadata['Environment Type'].str.contains(env_type)]
-    #metadata=metadata[metadata['Site Name'].str.match(city)]
-    #metadata=metadata.loc[metadata['Site Name']=='London Westminster']
     metadata=metadata.reset_index(drop=False)
     area=metadata['Zone']
     location=metadata['Site Name']
@@ -105,10 +111,15 @@ for e in range(env_no):
 
     ddf=ddf.loc[:,headers]
     ddf=ddf.astype(float)
-    df=pd.DataFrame(index=ddf.index,columns=['median','Q1','Q3'])
-    df['median']=ddf.median(axis=1)
-    df['Q1']=ddf.quantile(0.25,axis=1)
-    df['Q3']=ddf.quantile(0.75,axis=1)
+    ddf=ddf.replace(0,np.nan)
+    ddf=ddf.dropna(axis=0,thresh=5)
+    df=pd.DataFrame(index=ddf.index)
+    df['obs median']=ddf.median(axis=1)
+    df['obs Q1']=ddf.quantile(0.25,axis=1)
+    df['obs Q3']=ddf.quantile(0.75,axis=1)
+    df['obs_err']=df['obs Q3']-df['obs Q1']   
+    df['obs_err']=df['obs_err'].replace(0,np.nan)    
+    df=df.dropna(axis=0)    
 
     f='/users/mtj507/scratch/nasa_assimilations/2019_assimilation.nc'
     ds=xr.open_dataset(f)
@@ -131,60 +142,49 @@ for e in range(env_no):
     df_model.drop(df_model.tail(1).index,inplace=True)
     df_model=df_model.astype(float)
     mdf=pd.DataFrame(index=df_model.index)
-    mdf['median']=df_model.median(axis=1)
-    mdf['Q1']=df_model.quantile(0.25,axis=1)
-    mdf['Q3']=df_model.quantile(0.75,axis=1)
+    mdf['model median']=df_model.median(axis=1)
+    mdf['model Q1']=df_model.quantile(0.25,axis=1)
+    mdf['model Q3']=df_model.quantile(0.75,axis=1)
+    mdf['model_err']=mdf['model Q3']-mdf['model Q1']
+    mdf.index=mdf.index.round('H')
+    mdf['model_err'].values[mdf['model_err'].values < 0.01] = np.nan
+    mdf['model median'].values[mdf['model median'].values < 0.05] = np.nan
+    mdf=mdf.dropna(axis=0)
 
-    sdf=pd.DataFrame(index=range(len(df_model)))
-    sdf['obs med']=df['median'].values
-    sdf['obs Q1']=df['Q1'].values
-    sdf['obs Q3']=df['Q3'].values
-    sdf['model med']=mdf['median'].values
-    sdf['model Q1']=mdf['Q1'].values
-    sdf['model Q3']=mdf['Q3'].values
-    sdf['model_err']=sdf['model Q3']-sdf['model Q1']
-    sdf['obs_err']=sdf['obs Q3']-sdf['obs Q1']
+    zdf=pd.merge(df,mdf,right_index=True,left_index=True)    
+    zdf=zdf.drop(columns=['obs Q1','obs Q3','model Q1','model Q3'])
 
-    x_data=sdf['obs med']
-    y_data=sdf['model med']
-    x_err=sdf['obs_err']
-    y_err=sdf['model_err']
-
+    x_data=zdf['obs median']
+    y_data=zdf['model median']
+    x_err=zdf['obs_err']
+    y_err=zdf['model_err']
 
     linear=Model(linear_func)
     datas=RealData(x_data,y_data,sx=x_err,sy=y_err)
     odr=ODR(datas,linear,beta0=[0])
     output=odr.run()
     output.pprint()
-    beta=output.beta
-    betastd=output.sd_beta
-
+    beta=(output.beta)
+    betastd=(output.sd_beta)
+    
     ax.ravel()[e].plot(x_data,linear_func(beta,x_data),color='black',alpha=0.7)
 
-   
+    rmse_val=rmse(zdf['model median'],zdf['obs median'])
+    rmse_txt=str(round(rmse_val,2))
 
+    print('Model mean = '+ str(round(zdf['model median'].mean(),2)))
+    print('Obs mean = '+ str(round(zdf['obs median'].mean(),2)))    
+    print('RMSE = '+rmse_txt)
 
     if e == 0:
-        sns.scatterplot(x=x_data,y=y_data,data=sdf,ax=ax[0,0]) 
-  #      sns.regplot(x=x_data,y=y_data,data=sdf,ax=ax[0,0])
+        sns.scatterplot(x=x_data,y=y_data,data=zdf,ax=ax[0,0]) 
     if e == 1:
-        sns.scatterplot(x=x_data,y=y_data,data=sdf,ax=ax[0,1])
-   #     sns.regplot(x=x_data,y=y_data,data=sdf,ax=ax[0,1])
+        sns.scatterplot(x=x_data,y=y_data,data=zdf,ax=ax[0,1])
     if e == 2:
-        sns.scatterplot(x=x_data,y=y_data,data=sdf,ax=ax[1,0])
-    #    sns.regplot(x=x_data,y=y_data,data=sdf,ax=ax[1,0])
+        sns.scatterplot(x=x_data,y=y_data,data=zdf,ax=ax[1,0])
     if e == 3:
-        sns.scatterplot(x=x_data,y=y_data,data=sdf,ax=ax[1,1])
-     #   sns.regplot(x=x_data,y=y_data,data=sdf,ax=ax[1,1])
+        sns.scatterplot(x=x_data,y=y_data,data=zdf,ax=ax[1,1])
 
-#    def rmse(predictions, targets):
-#        return np.sqrt(((predictions-targets)**2).mean())
-#    rmse_val=rmse(rmse_df['model'],rmse_df['obs'])
-#    rmse_txt=str(round(rmse_val,2))
-#    txt=(env_type+'\n mod mean='+mod_mean+' ug/m3 \n obs mean='+obs_mean+' ug/m3 \n RMSE = '+rmse_txt+' ug/m3')
-#    print(txt)
-    #plt.annotate(txt,fontsize=8,xy=(0.35,0.85),xycoords='axes fraction')
-#    ax.ravel()[e].plot(df_model.index,df_model['median'],color='green',alpha=0.8,label='Model')
     if e == 0 or e == 2:
         ax.ravel()[e].set_ylabel(Emission+r' Model ($\mu g\:  m^{-3}$)')
     if e == 2 or e == 3:
@@ -193,17 +193,15 @@ for e in range(env_no):
         ax.ravel()[e].set_ylabel('')
     if e == 0 or e == 1:
         ax.ravel()[e].set_xlabel('')
+    if emission == 'o3':
+        ax.ravel()[3].set_visible(False)
 
     ax.ravel()[e].set_title(env_type)
 
     xy=np.linspace(*ax.ravel()[e].get_xlim())
     ax.ravel()[e].plot(xy,xy,linestyle='dashed',color='grey')
 
-#    upperx=sdf['obs med'].max()
-#    uppery=sdf['model med'].max()
-    
-#    axeslimit=max(sdf['obs med'],sdf['model med']
-
+fig.tight_layout()
 path='/users/mtj507/scratch//obs_vs_forecast/assimilation_scripts/plots/whole_year/'+emission+'/'
 plt.savefig(path+emission+'_scatter_2019.png')
 plt.close()
