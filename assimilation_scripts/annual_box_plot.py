@@ -15,13 +15,11 @@ fig=plt.figure()
 fig,ax=plt.subplots(2,2,figsize=[6,12])
 palette=sns.color_palette(['green','grey'])
 
-emission='pm25'
+emission='no'
 print(emission)
-env_list=['AURN','Background Urban','Traffic Urban','Background Rural','Industrial urban','Industrial Suburban','background Suburban']
+env_list=['AURN','Background Urban','Background Rural','Traffic Urban','Industrial urban','Industrial Suburban','background Suburban']
 env_no=4
  
-#env_type='AURN'
-
 week='fullweek'
 
 date1='2019-01-01'
