@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-emission='o3'
+emission='no2'
 
 fig=plt.figure(figsize=[20,20])
 fig,ax=plt.subplots(2,2,figsize=[8,8])
@@ -26,8 +26,23 @@ if emission == 'o3':
 
 week='fullweek'
 
-date1='2019-01-01'
-date2='2019-12-31'
+season='2019'
+
+if season == 'winter':
+    date1='2019-01-01'
+    date2='2019-03-19'
+if season == 'spring':
+    date1='2019-03-20'
+    date2='2019-06-20'
+if season == 'summer':
+    date1='2019-06-21'
+    date2='2019-09-22'
+if season == 'autumn':
+    date1='2019-09-23'
+    date2='2019-12-20'
+if season == '2019':
+    date1='2019-01-01'
+    date2='2019-12-31'
 
 if emission == 'no2':
   conv=1.88*10**9
@@ -58,6 +73,9 @@ if week == 'weekday':
 if week == 'weekend':
   day1=5
   day2=6
+
+def rmse(predictions, targets):
+    return np.sqrt(((predictions-targets)**2).mean())
 
 
 for e in range(env_no):
@@ -154,9 +172,21 @@ for e in range(env_no):
     if emission == 'o3' and e == 3:
         ax.ravel()[e].set_visible(False)
 
+    mod_mean=df_median['median'].mean()
+    mod_mean=str(round(mod_mean,2))
+    print('mod mean = '+mod_mean)
+
+    obs_mean=ddf_median['median'].mean()
+    obs_mean=str(round(obs_mean,2))
+    print('obs mean = '+obs_mean)
+ 
+    rmse_val=rmse(df_median['median'],ddf_median['median'])
+    rmse_txt=str(round(rmse_val,2))
+    print('RMSE = '+rmse_txt)
+
 fig.tight_layout()
 path='/users/mtj507/scratch//obs_vs_forecast/assimilation_scripts/plots/whole_year/'+emission+'/'
-plt.savefig(path+emission+'_2019_diurnal.png')
+plt.savefig(path+emission+'_diurnal_'+season+'_'+week+'.png')
 plt.close()
 
 
