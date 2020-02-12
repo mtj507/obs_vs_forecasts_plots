@@ -11,9 +11,7 @@ import seaborn as sns
 from scipy.odr import *
 
 emission='o3'
-env_type='AURN'
-
-
+env_type='Background Urban'
 
 
 week='fullweek'
@@ -98,7 +96,7 @@ location_list=list(locations)
 fig=plt.figure()
 fig,axes=plt.subplots(ncols=ncol,nrows=nrow,figsize=fsize)
 
-metric_df=pd.DataFrame(columns=['site name','obs median','mod median','RMSE','ODR gradient'])
+metric_df=pd.DataFrame(columns=['site name','nf RMSE','nf ODR gradient'])
 
 f='/users/mtj507/scratch/nasa_assimilations/2019_assimilation.nc'
 ds=xr.open_dataset(f)
@@ -163,6 +161,8 @@ for i,ax in zip(range(len(location_list)),axes.flatten()):
 #    print('RMSE = '+rmse_txt)
 #    print('ODR gradient = '+beta_txt)
 
+    metric_df=metric_df.append({'site name':site,'nf RMSE':rmse_txt,'nf ODR gradient':beta_txt},ignore_index=True)
+
 
 if env_type == 'Background Rural':
     axes[4,1].set_visible(False)
@@ -193,7 +193,6 @@ path='/users/mtj507/scratch//obs_vs_forecast/assimilation_scripts/plots/whole_ye
 plt.savefig(path+emission+'_non_forced_large_scatter_'+env_type+'.png')
 plt.close()
 
-
-
-
+metric_path='/users/mtj507/scratch//obs_vs_forecast/assimilation_scripts/plots/whole_year/o3/ozone_nf_site_metrics_'+env_type+'.csv'
+metric_df.to_csv(metric_path)
 
