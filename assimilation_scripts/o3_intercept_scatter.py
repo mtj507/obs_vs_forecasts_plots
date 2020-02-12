@@ -11,7 +11,7 @@ import seaborn as sns
 from scipy.odr import *
 
 emission='o3'
-env_type='Background Urban'
+env_type='AURN'
 
 
 week='fullweek'
@@ -54,9 +54,6 @@ def inter_func(B,x):
     y=B[0]*x+B[1]
     return y
 
-def rmse(predictions, targets):
-    return np.sqrt(((predictions-targets)**2).mean())
-
 if env_type == 'AURN':
     env_type=' '
 
@@ -64,12 +61,7 @@ metadata_csv='/users/mtj507/scratch/defra_data/defra_site_metadata.csv'
 metadata=pd.read_csv(metadata_csv, low_memory=False)
 metadata=metadata.loc[metadata['Environment Type'].str.contains(env_type)]
 metadata=metadata.reset_index(drop=False)
-area=metadata['Zone']
-location=metadata['Site Name']
-latitude=metadata['Latitude']
-longitude=metadata['Longitude']
-environment=metadata['Environment Type']
-a=location
+a=metadata['Site Name']
 
 defra_csv='/users/mtj507/scratch/defra_data/'+emission+'_2019.csv'
 ddf=pd.read_csv(defra_csv, low_memory=False)
@@ -93,6 +85,13 @@ b=ddf.columns
 locations=set(a).intersection(b)
 location_list=list(locations)
 
+metadata=metadata.loc[metadata['Site Name'].isin(location_list)]
+metadata=metadata.reset_index(drop=True)
+location=metadata['Site Name']
+latitude=metadata['Latitude']
+longitude=metadata['Longitude']
+no_locations=len(metadata.index)
+
 fig=plt.figure()
 fig,axes=plt.subplots(ncols=ncol,nrows=nrow,figsize=fsize)
 
@@ -101,8 +100,8 @@ metric_df=pd.DataFrame(columns=['site name','nf RMSE','nf ODR gradient'])
 f='/users/mtj507/scratch/nasa_assimilations/2019_assimilation.nc'
 ds=xr.open_dataset(f)
     
-for i,ax in zip(range(len(location_list)),axes.flatten()):
-    site=location_list[i]
+for i,ax in zip(range(0,no_locations),axes.flatten()):
+    site=location[i]
     ddf1=ddf.loc[:,site]
     ddf1=ddf1.astype(float)
     ddf1=ddf1.replace(0,np.nan)
@@ -145,8 +144,6 @@ for i,ax in zip(range(len(location_list)),axes.flatten()):
 
     ax.plot(x_data,inter_func(beta,x_data),color='black',alpha=0.8)
 
-    rmse_val=rmse(y_data,x_data)
-    rmse_txt=str(round(rmse_val,2))
 
     xy=np.linspace(*ax.get_xlim())
     ax.plot(xy,xy,linestyle='dashed',color='grey')
@@ -154,6 +151,13 @@ for i,ax in zip(range(len(location_list)),axes.flatten()):
     ax.set_title(site,fontsize=8)
     ax.set_ylabel('')
     ax.set_xlabel('')
+
+    if site == 'Mace Head':
+        print(i)
+        print(metadata['Site Name'][i])
+        print(latitude[i])
+        print(metadata['Latitude'][i])
+
     
 #    print(site)
 #    print('Obs Median = '+obs_median)
@@ -161,7 +165,7 @@ for i,ax in zip(range(len(location_list)),axes.flatten()):
 #    print('RMSE = '+rmse_txt)
 #    print('ODR gradient = '+beta_txt)
 
-    metric_df=metric_df.append({'site name':site,'nf RMSE':rmse_txt,'nf ODR gradient':beta_txt},ignore_index=True)
+    metric_df=metric_df.append({'site name':site,'nf ODR gradient':beta_txt},ignore_index=True)
 
 
 if env_type == 'Background Rural':
