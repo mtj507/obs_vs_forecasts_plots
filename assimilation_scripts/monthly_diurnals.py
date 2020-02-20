@@ -11,7 +11,7 @@ import seaborn as sns
 from scipy.odr import *
 
 emission='o3'
-env_type='AURN'
+env_type='Background Rural'
 
 months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
     
@@ -119,9 +119,10 @@ for m,ax in zip(np.arange(len(months)),axes.flatten()):
     if env_type == ' ':
         env_type='AURN'
 
-    ax.set_title(months[m],fontsize=8)
+    ax.set_title(months[m],fontsize=10)
     ax.set_xlabel('')
     ax.set_ylabel('')
+    ax.set_ylim(20,100)
 
 fig.add_subplot(111,frameon=False)
 plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
